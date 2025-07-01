@@ -15,7 +15,7 @@ if (session_status() === PHP_SESSION_NONE) {
 function redirectToAdminDashboard($message) {
     if (isset($_SESSION['admin_username'])) {
         $_SESSION['message'] = $message;
-        header('Location: ../admin_dashboard.php');
+        header('Location: ../dashboard.php');
         exit();
     }
 }

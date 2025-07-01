@@ -1,8 +1,8 @@
 <?php
 
-require_once '../helpers/auth_helper.php';
-require_once '../vendor/autoload.php';
-require_once '../config/config.php';
+require_once './helpers/auth_helper.php';
+require_once './vendor/autoload.php';
+require_once './config/config.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -89,7 +89,7 @@ function handleLoginAction()
                     $_SESSION['admin_username'] = $user['Email'];
                     $_SESSION['IsAdmin'] = $user['IsAdmin'];
 
-                    redirectWithMessage('../admin_dashboard.php', 'Welcome back, Administrator!', 'success');
+                    redirectWithMessage('../dashboard.php', 'Welcome back, Administrator!', 'success');
                 } else {
                     // Regular user login
                     $_SESSION['username'] = $user['Email'];
@@ -148,7 +148,7 @@ function handleRegisterAction()
 
         if ($user && isset($_SESSION['admin_username'])) {
             $_SESSION['message'] = "Email already registered.";
-            header('Location: ../admin_dashboard.php');
+            header('Location: ../dashboard.php');
             exit();
         } else if ($user) {
             redirectWithMessage('../index.php', 'Email already registered.', 'error');
@@ -325,7 +325,7 @@ function handleResetPasswordAction(){
 
 function handleEmailVerificationAction(){
     $pdo = getDatabase();
-    
+
     if (isset($_GET['token'])) {
         $token = $_GET['token'];
 

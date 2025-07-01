@@ -41,7 +41,7 @@ $router->addRoute('profile', 'pages/profile.php', 'user');            // User pr
 // ============================================
 // USER ACTION ROUTES (Form processing)
 // ============================================
-$router->addRoute('device/add', 'functions/device_functions.php', 'user');        // Add device
+$router->addRoute('device/add', 'functions/device_functions.php', 'admin');        // Add device
 $router->addRoute('device/edit/*', 'functions/device_functions.php', 'user');     // Edit device
 $router->addRoute('device/delete/*', 'functions/device_functions.php', 'user');   // Delete device
 $router->addRoute('device/view/*', 'functions/device_functions.php', 'user');     // View device details
@@ -56,8 +56,9 @@ $router->addRoute('user/change-password', 'functions/user_functions.php', 'user'
 // ============================================
 // ADMIN ROUTES (Requires admin role)
 // ============================================
-$router->addRoute('admin', 'pages/dashboard.php', 'admin');                // Admin dashboard
-$router->addRoute('admin/dashboard', 'pages/dashboard.php', 'admin');      // Admin dashboard (alternative)
+$router->addRoute('admin', 'pages/dashboard.php', 'admin');
+$router->addRoute('admin/dashboard', 'pages/dashboard.php', 'admin');
+
 $router->addRoute('admin/devices', 'pages/devices.php', 'admin');          // All devices management
 $router->addRoute('admin/users', 'pages/users.php', 'admin');              // User management
 $router->addRoute('admin/family', 'pages/family.php', 'admin');            // All family members
