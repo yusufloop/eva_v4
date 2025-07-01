@@ -1,0 +1,241 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+
+/* Form Styling */
+
+/* Add/Edit Device Form Container */
+#addDeviceForm{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 20px 50px;
+    max-width: 100%;
+    z-index: 1010; /* To ensure it is above other elements */
+    margin: auto; /* Center the form inside the container     */
+}
+
+#addUserForm, #editInventoryForm{
+    background-color: #FFFFFF;
+    border-radius: 10px;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    margin: auto;
+    padding: 5px;
+    width: 400px;
+
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 20px 50px;
+    max-width: 100%;
+    z-index: 1010; /* To ensure it is above other elements */
+}
+
+#formScrollBGContainer {
+    background-color: #FFFFFF;
+    border-radius: 10px;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    margin: auto;
+    padding: 5px;
+}
+
+/* Scrollable container inside the form */
+.form-scroll-container {
+    max-height: 80vh; /* Set max height to 80% of the viewport height */
+    overflow-y: auto; /* Adds vertical scroll if the content exceeds the height */
+    box-sizing: border-box; /* Ensures padding is included in width/height calculations */
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    scrollbar-width: thin; /* Makes the scrollbar thin (for Firefox) */
+    scrollbar-color: #888 #f1f1f1; /* Thumb color and track color (for Firefox) */
+}
+
+/* Styling the scrollbar to match form curvature */
+.form-scroll-container::-webkit-scrollbar {
+    width: 8px; /* Adjust the width of the scrollbar */
+}
+
+.form-scroll-container::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Track color */
+    border-radius: 10px; /* Matches form's rounded corners */
+}
+
+.form-scroll-container::-webkit-scrollbar-thumb {
+    background: #888; /* Scrollbar color */
+    border-radius: 10px; /* Matches the overall rounded design */
+}
+
+.form-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Scrollbar color on hover */
+}
+
+/* Hide the form by default */
+.hidden {
+    display: none;
+}
+
+/* Darkened Background Overlay */
+.form-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Darkened background */
+    display: none; /* Hidden by default */
+    align-items: center;
+    justify-content: center;
+    z-index: 1000; /* Ensure it appears above other content */
+}
+
+/* Show overlay when form is activated */
+.form-overlay.active {
+    display: flex;
+}
+
+/* Form Buttons */
+#addDeviceForm button, #addUserForm button, #editInventoryForm button {
+    border-radius: 20px;
+    border: 1px solid #FF4B2B;
+    background-color: #FF4B2B;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 12px 45px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: transform 80ms ease-in;
+    margin-top: 10px;
+}
+
+#addDeviceForm button.btn-secondary, #addUserForm button.btn-secondary, #editInventoryForm button.btn-secondary {
+    background-color: #6c757d;
+    border: 1px solid #6c757d;
+    color: #fff;
+}
+
+#addDeviceForm button:active, #addUserForm button:active, #editInventoryForm button:active {
+    transform: scale(0.95);
+}
+
+#addDeviceForm button:focus, #addUserForm button:focus, #editInventoryForm button:focus {
+    outline: none;
+}
+
+/* Styling for the select picker to match other form fields */
+#addDeviceForm select, #addUserForm select {
+    background-color: #eee;
+    border: none;
+    padding: 12px 15px;
+    margin: 8px 0;
+    width: 100%;
+    font-family: 'Montserrat', sans-serif;
+}
+
+#addDeviceForm select:focus, #addUserForm select:focus{
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Form Input Fields Styling */
+#addDeviceForm input, #addUserForm input, #editInventoryForm input {
+    background-color: #eee;
+    border: none;
+    padding: 12px 15px;
+    margin: 8px 0;
+    width: 100%;
+}
+
+#addDeviceForm .form-group, #addUserForm .form-group, #editInventoryForm .form-group {
+    width: 100%;
+}
+
+/* CSS for the dropdown list */
+.dropdown-list {
+    position: absolute;
+    max-height: 150px;
+    overflow-y: auto;
+    background-color: white;
+    border: 1px solid #ccc;
+    width: 200px; /* Adjust as needed */
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    z-index: 1000;
+}
+
+.dropdown-list li {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.dropdown-list li:hover {
+    background-color: #f1f1f1;
+}
+
+/* Specific Styles for Validity and Strength Containers */
+small {
+    padding-bottom: 1em;
+}
+
+.button-container {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#box {
+    width: 400px;
+    margin: 10% auto;
+    text-align: center;
+    background: rgba(255,255,255,0.6);
+    padding: 20px 50px;
+    box-sizing: border-box;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+    border-radius: 2%;
+}
+
+#valid {
+    font-size: 12px;
+    color: #FF4B2B;
+    height: 15px;
+}
+
+#strong {
+    height: 20px;
+    font-size: 12px;
+    color: #FF4B2B;
+    text-transform: capitalize;
+    background: rgba(205,205,205,0.1);
+    border-radius: 5px;
+    overflow: hidden;
+    text-align: center;
+}
+
+#strong span {
+    display: block;
+    box-shadow: 0 0 0 #fff inset;
+    height: 100%;
+    transition: all 0.8s;
+}
+
+#strong .weak {
+    box-shadow: 5em 0 0 #FF4B2B inset;
+}
+
+#strong .medium {
+    color: #da6;
+    box-shadow: 10em 0 0 #da6 inset;
+}
+
+#strong .strong {
+    color: #595;
+    box-shadow: 50em 0 0 #ada inset;
+}
+
+
+
+/**/

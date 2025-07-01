@@ -1,0 +1,270 @@
+# .gitignore for EVA PHP Project
+
+# ==============================================================================
+# PHP SPECIFIC
+# ==============================================================================
+
+# Composer dependencies
+/vendor/
+composer.phar
+composer.lock
+
+# PHP temporary files
+*.tmp
+*.temp
+*.log
+
+# ==============================================================================
+# CONFIGURATION & SENSITIVE FILES
+# ==============================================================================
+
+# Environment configuration files
+.env
+.env.local
+.env.*.local
+
+
+
+# Backup configuration files
+config/*.backup
+config/*.bak
+
+config/mail.php
+config/database.php
+
+# ==============================================================================
+# LOGS & CACHE
+# ==============================================================================
+
+# Application logs
+/logs/
+*.log
+/storage/logs/
+
+# Cache files
+/cache/
+/tmp/
+/temp/
+
+# Session files
+/sessions/
+session_*
+
+# ==============================================================================
+# UPLOADS & USER CONTENT
+# ==============================================================================
+
+# User uploaded files
+/uploads/
+/storage/uploads/
+/public/uploads/
+
+# Generated thumbnails
+/thumbnails/
+/storage/thumbnails/
+
+# ==============================================================================
+# IDE & EDITOR FILES
+# ==============================================================================
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# PhpStorm / IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Atom
+.atom/
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# ==============================================================================
+# OPERATING SYSTEM FILES
+# ==============================================================================
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ==============================================================================
+# VERSION CONTROL
+# ==============================================================================
+
+# Git
+.git/
+*.orig
+
+# SVN
+.svn/
+
+# ==============================================================================
+# BUILD & DEPLOYMENT
+# ==============================================================================
+
+# Build artifacts
+/build/
+/dist/
+/release/
+
+# Deployment scripts (if contain sensitive info)
+deploy.php
+deploy.sh
+
+# Docker
+.dockerignore
+Dockerfile.local
+
+# ==============================================================================
+# TESTING
+# ==============================================================================
+
+# PHPUnit
+/phpunit.xml
+/.phpunit.result.cache
+/coverage/
+
+# Codeception
+/tests/_output/
+/tests/_support/_generated/
+
+# ==============================================================================
+# PACKAGE MANAGERS
+# ==============================================================================
+
+# NPM (if using for frontend assets)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Bower
+bower_components/
+
+# ==============================================================================
+# DOCUMENTATION
+# ==============================================================================
+
+# Generated documentation
+/docs/_build/
+/docs/build/
+
+# ==============================================================================
+# SECURITY & BACKUP
+# ==============================================================================
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+
+# Security scan results
+security-checker.lock
+
+# SSL certificates (should not be in repo)
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+
+# Database dumps
+*.sql
+*.dump
+
+# ==============================================================================
+# PROJECT SPECIFIC (EVA System)
+# ==============================================================================
+
+# Device firmware files
+/firmware/
+
+# Email templates with sensitive data
+email_templates/test_*
+
+# Configuration templates
+config.template.php
+mail.template.php
+
+# Development database
+database.sqlite
+*.db
+
+# Local development files
+local.php
+dev.php
+test.php
+debug.php
+
+# System logs specific to EVA
+device_logs/
+call_logs/
+emergency_logs/
+
+# Temporary device data
+device_temp/
+call_temp/
+
+# Reports and exports
+/reports/
+/exports/
+*.csv
+*.xlsx
+*.pdf
+
+# ==============================================================================
+# RUNTIME FILES
+# ==============================================================================
+
+# PHP session files
+sess_*
+
+# Lock files
+*.lock
+
+# PID files
+*.pid
+
