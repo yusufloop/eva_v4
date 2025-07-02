@@ -24,14 +24,15 @@ if (isset($_SESSION['admin_username'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EVA - Emergency Voice Alert Management Platform</title>
-    <link rel="stylesheet" href="/assets/css/modern-login.css">
+    <link rel="stylesheet" href="assets/css/eva-login.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="login-container">
-        <!-- Left Panel - EVA Information -->
+        <!-- Left Panel - EVA Branding -->
         <div class="left-panel">
+            <div class="cityscape-bg"></div>
             <div class="eva-branding">
                 <div class="eva-logo">
                     <div class="logo-circle">
@@ -42,22 +43,25 @@ if (isset($_SESSION['admin_username'])) {
                 
                 <div class="features-list">
                     <div class="feature-item">
-                        <i class="fas fa-wifi"></i>
+                        <div class="feature-icon">
+                            <i class="fas fa-wifi"></i>
+                        </div>
                         <span>Real-Time Device Monitoring</span>
                     </div>
                     <div class="feature-item">
-                        <i class="fas fa-phone-alt"></i>
+                        <div class="feature-icon">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
                         <span>Emergency Response Coordination</span>
                     </div>
                     <div class="feature-item">
-                        <i class="fas fa-chart-line"></i>
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
                         <span>Reporting and Logging</span>
                     </div>
                 </div>
             </div>
-            
-            <!-- Background cityscape overlay -->
-            <div class="cityscape-overlay"></div>
         </div>
 
         <!-- Right Panel - Login Form -->
@@ -71,7 +75,7 @@ if (isset($_SESSION['admin_username'])) {
 
                 <!-- Login Form -->
                 <div class="form-wrapper" id="loginForm">
-                    <form action="/actions/auth/login.php" method="POST" class="auth-form">
+                    <form action="actions/auth/login.php" method="POST" class="auth-form">
                         <h2>Welcome Back</h2>
                         <p class="form-subtitle">Sign in to your account</p>
 
@@ -124,7 +128,7 @@ if (isset($_SESSION['admin_username'])) {
                                 <span class="checkmark"></span>
                                 Remember me
                             </label>
-                            <a href="/auth/forgot-password" class="forgot-password">Forgot password?</a>
+                            <a href="auth/forgot-password.php" class="forgot-password">Forgot password?</a>
                         </div>
 
                         <button type="submit" class="submit-btn">
@@ -136,7 +140,7 @@ if (isset($_SESSION['admin_username'])) {
 
                 <!-- Signup Form -->
                 <div class="form-wrapper hidden" id="signupForm">
-                    <form action="/actions/auth/register.php" method="POST" class="auth-form" onsubmit="return validateSignupForm()">
+                    <form action="actions/auth/register.php" method="POST" class="auth-form" onsubmit="return validateSignupForm()">
                         <h2>Create Account</h2>
                         <p class="form-subtitle">Join the EVA platform</p>
 
@@ -217,6 +221,6 @@ if (isset($_SESSION['admin_username'])) {
         </div>
     </div>
 
-    <script src="/assets/js/modern-login.js"></script>
+    <script src="assets/js/eva-login.js"></script>
 </body>
 </html>
