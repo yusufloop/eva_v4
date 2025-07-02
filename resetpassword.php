@@ -9,7 +9,7 @@
 </head>
 <body>
 <div id="box">
-  <form id="resetPasswordForm" action="functions/resetpassword_action.php" method="POST" onsubmit="return validateForm();">
+  <form id="resetPasswordForm" action="actions/resetpassword_action.php" method="POST" onsubmit="return validateForm();">
     <h1>Reset Password <span>Enter a new strong password!</span></h1>
       <!-- Hidden field to pass the token -->
       <input type="hidden" id="token" name="token" value="<?php echo htmlspecialchars($token); ?>">

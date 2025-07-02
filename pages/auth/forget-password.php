@@ -7,7 +7,7 @@
 </head>
 <body>
 <div id="box">
-  <form id="forgetpasswordform" action="functions/forgetpassword_action.php"  method="POST">
+  <form id="forgetpasswordform" action="/actions/auth/forget-password.php"  method="POST">
   <h1>Forget password<span>Enter a valid email.</span></h1>
   <form>
       <input type="email" placeholder="Email Address" id="email" name="email" class="Email">

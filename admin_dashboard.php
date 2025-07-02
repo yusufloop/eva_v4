@@ -1,6 +1,6 @@
 
 <?php 		    		   
-include 'functions/admin_dashboard_action.php';
+include 'actions/admin_dashboard_action.php';
 
 // Retrieve users' data from session
 if (isset($_SESSION['users_data'])) {
@@ -36,7 +36,7 @@ if (isset($_SESSION['users_data'])) {
 	            <li><a href="changepassword.php">Change Password</a></li>
 	            <li><a href="admin_managedependents.php">Manage Dependents</a></li>
 	            <li><a href="admin.php">Admin</a></li>
-	            <li><a href="functions/logout_action.php">Logout</a></li>
+	            <li><a href="actions/logout_action.php">Logout</a></li>
 	        </ul>
 	    </div>
 	</nav>
@@ -60,7 +60,7 @@ if (isset($_SESSION['users_data'])) {
     	<div id="formScrollBGContainer">
 	    	<div class="form-scroll-container">
 
-		        <form id="addDeviceForm" action="functions/admin_dashboard_action.php" method="POST">
+		        <form id="addDeviceForm" action="actions/admin_dashboard_action.php" method="POST">
 					<!-- Dropdown List -->
 					<div class="form-group">
 					    <label for="userId">Select User ID:</label>
@@ -166,7 +166,7 @@ if (isset($_SESSION['users_data'])) {
 		<div id="addUserFormContainer" class="form-overlay hidden">
 			<!-- <div id="formScrollBGContainer"> -->
 		    	<div class="form-scroll-container">
-					<form action="functions/register_action.php" id="addUserForm" method="POST" onsubmit="return validateForm();">
+					<form action="actions/register_action.php" id="addUserForm" method="POST" onsubmit="return validateForm();">
 						<h1>Create User</h1>
 				        <?php if (!empty($error)): ?>
 				            <p id="error-message" style="color: red;"><?php echo htmlspecialchars($error); ?></p>

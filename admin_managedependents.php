@@ -1,6 +1,6 @@
 
 <?php 		    		   
-include 'functions/admin_managedependents_action.php';
+include 'actions/admin_managedependents_action.php';
 
 // Retrieve users' data from session
 if (isset($_SESSION['users_data'])) {
@@ -35,7 +35,7 @@ if (isset($_SESSION['users_data'])) {
 	            <li><a href="dashboard.php">Home</a></li>
 	            <li><a href="changepassword.php">Change Password</a></li>
 	            <li><a href="managedependents.php">Manage Dependents</a></li>
-	            <li><a href="functions/logout_action.php">Logout</a></li>
+	            <li><a href="actions/logout_action.php">Logout</a></li>
 	        </ul>
 
 			</div>
@@ -52,7 +52,7 @@ if (isset($_SESSION['users_data'])) {
 <div id="addDependentFormContainer" class="form-overlay hidden">
     <div id="formScrollBGContainer">
         <div class="form-scroll-container">
-            <form id="addDependentForm" action="functions/admin_managedependents_action.php" method="POST">
+            <form id="addDependentForm" action="actions/admin_managedependents_action.php" method="POST">
 				<!-- Dropdown List -->
 				<div class="form-group">
 				    <label for="userId">Select User ID:</label>

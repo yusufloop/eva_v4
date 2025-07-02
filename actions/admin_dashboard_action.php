@@ -35,7 +35,7 @@ function generateTable($pdo) {
         echo '<div style="display: inline-block;">';
         echo '<a href="device_details.php?serialNo=' . urlencode($user['SerialNoFK']) . '" class="info-btn" data-u_id="' . htmlspecialchars($user['SerialNoFK']) . '"> ℹ️ </a>';
         echo '<a href="javascript:void(0);" class="edit-btn" data-serialno="' . htmlspecialchars($user['SerialNoFK']) . '" onclick="editDevice(\'' . htmlspecialchars($user['SerialNoFK']) . '\')">✏️</a>';
-        echo '<a href="functions/delete_eva_device.php?serialNo=' . urlencode($user['SerialNoFK']) . '" title="Delete" onclick="return confirm(\'Are you sure you want to delete this device?\');">🗑️</a>';
+        echo '<a href="actions/delete_eva_device.php?serialNo=' . urlencode($user['SerialNoFK']) . '" title="Delete" onclick="return confirm(\'Are you sure you want to delete this device?\');">🗑️</a>';
         echo '</div>';
         echo '</td>';
             echo '</tr>';

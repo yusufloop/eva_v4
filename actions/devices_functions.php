@@ -4,6 +4,138 @@
  * Handles all device-related operations for the EVA system
  */
 
+// Handle routing - this acts like a controller
+if (isset($_GET['action'])) {
+    session_start();
+    require_once 'config.php';
+    
+    $action = $_GET['action'];
+    $userId = $_SESSION['UserID'] ?? null;
+    
+    if (!$userId) {
+        header('Location: /index.php');
+        exit();
+    }
+    
+    switch ($action) {
+        case 'add':
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                handleAddDevice($pdo, $_POST, $userId);
+            }
+            break;
+            
+        case 'edit':
+            $serialNo = $_GET['id'] ?? '';
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                handleEditDevice($pdo, $serialNo, $_POST, $userId);
+            } else {
+                handleGetDeviceForEdit($pdo, $serialNo, $userId);
+            }
+            break;
+            
+        case 'delete':
+            $serialNo = $_GET['id'] ?? '';
+            handleDeleteDevice($pdo, $serialNo, $userId);
+            break;
+            
+        case 'view':
+            $serialNo = $_GET['id'] ?? '';
+            handleViewDevice($pdo, $serialNo, $userId);
+            break;
+            
+        default:
+            http_response_code(404);
+            echo json_encode(['error' => 'Action not found']);
+            exit();
+    }
+    exit(); // Important: exit after handling the action
+}
+
+// Controller-like handler functions
+function handleAddDevice($pdo, $postData, $userId) {
+    $result = processDeviceForm($pdo, $postData);
+    $_SESSION['device_message'] = $result['message'];
+    
+    // Redirect based on user role
+    if (isset($_SESSION['admin_username'])) {
+        header("Location: /admin_dashboard.php");
+    } else {
+        header("Location: /dashboard.php");
+    }
+}
+
+function handleEditDevice($pdo, $serialNo, $postData, $userId) {
+    $postData['serial_no'] = $serialNo;
+    $result = processDeviceForm($pdo, $postData);
+    $_SESSION['device_message'] = $result['message'];
+    
+    // Redirect based on user role
+    if (isset($_SESSION['admin_username'])) {
+        header("Location: /admin_dashboard.php");
+    } else {
+        header("Location: /dashboard.php");
+    }
+}
+
+function handleGetDeviceForEdit($pdo, $serialNo, $userId) {
+    $device = getDeviceBySerialNo($pdo, $serialNo);
+    
+    if (!$device) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Device not found']);
+        return;
+    }
+    
+    // Check permissions
+    if ($device['UserIDFK'] != $userId && !isAdmin($pdo, $userId)) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Access denied']);
+        return;
+    }
+    
+    header('Content-Type: application/json');
+    echo json_encode($device);
+}
+
+function handleDeleteDevice($pdo, $serialNo, $userId) {
+    $result = deleteDevice($pdo, $serialNo, $userId);
+    $_SESSION['device_message'] = $result['message'];
+    
+    // Redirect based on user role
+    if (isset($_SESSION['admin_username'])) {
+        header("Location: /admin_dashboard.php");
+    } else {
+        header("Location: /dashboard.php");
+    }
+}
+
+function handleViewDevice($pdo, $serialNo, $userId) {
+    $device = getDeviceBySerialNo($pdo, $serialNo);
+    
+    if (!$device) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Device not found']);
+        return;
+    }
+    
+    // Check permissions
+    if ($device['UserIDFK'] != $userId && !isAdmin($pdo, $userId)) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Access denied']);
+        return;
+    }
+    
+    // If it's an AJAX request, return JSON
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+        header('Content-Type: application/json');
+        echo json_encode($device);
+        return;
+    }
+    
+    // Otherwise redirect to device details page
+    header("Location: /device_details.php?serialNo=" . urlencode($serialNo));
+}
+
 /**
  * Add a new device to the system
  * 

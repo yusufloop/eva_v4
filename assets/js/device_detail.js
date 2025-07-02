@@ -26,7 +26,7 @@ function sort(ascending, columnClassName, tableId) {
 
 function editDevice(U_Id) {
     // Send an AJAX request to the PHP backend to get the device data
-    fetch('functions/admin_dashboard_action.php?u_id=' + U_Id)
+    fetch('actions/admin_dashboard_action.php?u_id=' + U_Id)
         .then(response => response.json())
         .then(data => {
         	console.log(data); // Log the fetched data to the console to see the query result

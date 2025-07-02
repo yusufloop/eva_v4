@@ -1,9 +1,9 @@
 
 <?php 	
 session_start();
-// require 'functions/config.php';	    		   
-include 'functions/admin_users_tabs.php';
-include 'functions/admin_inventory_tabs.php';
+// require 'actions/config.php';	    		   
+include 'actions/admin_users_tabs.php';
+include 'actions/admin_inventory_tabs.php';
 
 if (!isset($_SESSION['admin_username'])) {
     header("Location: ./index.php");
@@ -45,7 +45,7 @@ if (isset($_SESSION['users_data'])) {
 	            <li><a href="changepassword.php">Change Password</a></li>
 	            <li><a href="admin_managedependents.php">Manage Dependents</a></li>
 	            <li><a href="admin.php">Admin</a></li>
-	            <li><a href="functions/logout_action.php">Logout</a></li>
+	            <li><a href="actions/logout_action.php">Logout</a></li>
 	        </ul>
 	    </div>
 	</nav>
@@ -68,7 +68,7 @@ if (isset($_SESSION['users_data'])) {
 	<div id="addUserFormContainer" class="form-overlay">
 		<!-- <div id="formScrollBGContainer"> -->
     	<div class="form-scroll-container">
-			<form action="functions/admin_users_tabs.php" id="addUserForm" method="POST">
+			<form action="actions/admin_users_tabs.php" id="addUserForm" method="POST">
 				<h1>Update User</h1>
 			    <label for="email">Email:</label>
 	            <input type="text" id="email" name="email" placeholder="Username" required />
@@ -92,7 +92,7 @@ if (isset($_SESSION['users_data'])) {
 	<div id="editInventoryFormContainer" class="form-overlay">
 		<!-- <div id="formScrollBGContainer"> -->
     	<div class="form-scroll-container">
-			<form action="functions/admin_inventory_tabs.php" id="editInventoryForm" method="POST">
+			<form action="actions/admin_inventory_tabs.php" id="editInventoryForm" method="POST">
 				<h1>Update Inventory</h1>
 			    <label for="SerialNo">Serial No:</label>
 	            <input type="text" id="SerialNo" name="SerialNo" placeholder="Serial No" required />
@@ -137,7 +137,7 @@ if (isset($_SESSION['users_data'])) {
 	        <input type="text" id="inventory-searchBar" placeholder="Search..." class="form-control">
 	    </div>
 
-		<form action="functions/upload_inventory_list.php" method="post" enctype="multipart/form-data">
+		<form action="actions/upload_inventory_list.php" method="post" enctype="multipart/form-data">
 		    <label for="csv_file">Select CSV File:</label>
 		    <input type="file" name="csv_file" id="csv_file" accept=".csv" required>
 		    <br><br>

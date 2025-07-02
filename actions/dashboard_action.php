@@ -1,10 +1,10 @@
 <?php
 
 session_start();
-require 'config.php';
+require './config/config.php';
 
 if (isset($_SESSION['admin_username'])) {
-    header("Location: admin_dashboard.php");
+    header("Location: ../pages/dashboard.php");
     exit();
 }
 
@@ -45,7 +45,7 @@ function generateTable($pdo, $UserID) {
         echo '<td>';
         echo '<a href="javascript:void(0);" class="edit-btn" data-serialno="' . htmlspecialchars($user['SerialNoFK']) . '" onclick="editDevice(\'' . htmlspecialchars($user['SerialNoFK']) . '\')">✏️</a>';
 
-        echo '<a href="functions/delete_eva_device.php?serialNo=' . urlencode($user['SerialNoFK']) . '" title="Delete" onclick="return confirm(\'Are you sure you want to delete this device?\');">🗑️</a>'; // Delete button
+        echo '<a href="actions/delete_eva_device.php?serialNo=' . urlencode($user['SerialNoFK']) . '" title="Delete" onclick="return confirm(\'Are you sure you want to delete this device?\');">🗑️</a>'; // Delete button
         echo '</td>';
 
 

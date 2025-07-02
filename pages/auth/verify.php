@@ -1,5 +1,5 @@
 <?php 
-require 'functions/config.php';
+require 'actions/config.php';
 ?>
 
 <!DOCTYPE html>

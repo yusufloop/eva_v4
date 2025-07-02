@@ -1,9 +1,9 @@
 <?php
 
-require_once './helpers/auth_helper.php';
-// require_once './functions/device_functions.php';
-// require_once './functions/user_functions.php';
-require_once './functions/dashboard_functions.php';
+require '../helpers/auth_helper.php';
+// require_once './actions/device_functions.php';
+// require_once './actions/user_functions.php';
+require '../actions/dashboard_functions.php';
 // require_once './includes/alerts.php';
 
 // Require authentication
@@ -28,15 +28,15 @@ elseif (hasRole('user')):
 endif;
 
 // Page assets
-$additionalCSS = ['./assets/css/dashboard.css', 'components.css'];
-$additionalJS = ['./assets/js/dashboard.js', 'charts.js'];
+$additionalCSS = ['../assets/css/dashboard.css', 'components.css'];
+$additionalJS = ['../assets/js/dashboard.js', 'charts.js'];
 ?>
 
-<?php include './includes/header.php'; ?>
+<?php include '../includes/header.php'; ?>
 
 <div class="dashboard-layout">
     <!-- Sidebar Navigation -->
-    <?php  include './includes/sidebar.php'; ?>
+    <?php  include '../includes/sidebar.php'; ?>
     
     <!-- Main Content -->
     <div class="main-content">
@@ -52,10 +52,12 @@ $additionalJS = ['./assets/js/dashboard.js', 'charts.js'];
                         <button class="btn btn-secondary" onclick="openAddUserModal()">
                             <i class="fas fa-user-plus"></i> Add User
                         </button>
+                        <button class="btn btn-warning"><a href="/actions/auth/logout.php">Logout</a></button>
                     <?php elseif (hasRole('user')): ?>
                         <button class="btn btn-primary" onclick="openAddDeviceModal()">
                             <i class="fas fa-plus"></i> Register Device
                         </button>
+                        <button class="btn btn-warning"><a href="/actions/auth/logout.php">Logout</a></button>
                     <?php endif; ?>
                 </div>
             </div>
@@ -467,4 +469,4 @@ $additionalJS = ['./assets/js/dashboard.js', 'charts.js'];
 </div>
 <?php endif; ?>
 
-<?php include './includes/footer.php'; ?>
+<?php include '../includes/footer.php'; ?>

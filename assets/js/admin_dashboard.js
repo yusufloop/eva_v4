@@ -172,7 +172,7 @@ function sort(ascending, columnClassName, tableId) {
 
 function editDevice(serialNo) {
     // Send an AJAX request to the PHP backend to get the device data
-    fetch('functions/admin_dashboard_action.php?serialNo=' + serialNo)
+    fetch('actions/admin_dashboard_action.php?serialNo=' + serialNo)
         .then(response => response.json())
         .then(data => {
         	console.log(data); // Log the fetched data to the console to see the query result
@@ -230,7 +230,7 @@ function fetchDependents(userId) {
     const hiddenDependentInput = document.getElementById("existingDependent");
 
     // Return the fetch Promise
-    return fetch(`functions/fetch_dependents.php?userId=${userId}`)
+    return fetch(`actions/fetch_dependents.php?userId=${userId}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);

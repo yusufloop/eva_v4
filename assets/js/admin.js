@@ -1,6 +1,6 @@
 function editInventory(InventoryNo) {
     // Send an AJAX request to the PHP backend to get the device data
-    fetch('functions/admin_inventory_tabs.php?InventoryNo=' + InventoryNo)
+    fetch('actions/admin_inventory_tabs.php?InventoryNo=' + InventoryNo)
         .then(response => response.json())
         .then(data => {
             console.log(data); // Log the fetched data to the console to see the query result
@@ -15,7 +15,7 @@ function editInventory(InventoryNo) {
 
 function editUser(userId) {
     // Send an AJAX request to the PHP backend to get the device data
-    fetch('functions/admin_users_tabs.php?userId=' + userId)
+    fetch('actions/admin_users_tabs.php?userId=' + userId)
         .then(response => response.json())
         .then(data => {
         	console.log(data); // Log the fetched data to the console to see the query result

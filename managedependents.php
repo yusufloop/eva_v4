@@ -1,6 +1,6 @@
 
 <?php 		    		   
-include 'functions/managedependents_action.php';
+include 'actions/managedependents_action.php';
 
 ?>
 
@@ -24,7 +24,7 @@ include 'functions/managedependents_action.php';
 	            <li><a href="dashboard.php">Home</a></li>
 	            <li><a href="changepassword.php">Change Password</a></li>
 	            <li><a href="managedependents.php">Manage Dependents</a></li>
-	            <li><a href="functions/logout_action.php">Logout</a></li>
+	            <li><a href="actions/logout_action.php">Logout</a></li>
 	        </ul>
 
 			</div>
@@ -41,7 +41,7 @@ include 'functions/managedependents_action.php';
 <div id="addDependentFormContainer" class="form-overlay hidden">
     <div id="formScrollBGContainer">
         <div class="form-scroll-container">
-            <form id="addDependentForm" action="functions/managedependents_action.php" method="POST">
+            <form id="addDependentForm" action="actions/managedependents_action.php" method="POST">
                 <!-- Hidden Dependent ID -->
                 <input type="hidden" id="dependentId" name="dependentId">
 

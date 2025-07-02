@@ -11,15 +11,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-
-function redirectToAdminDashboard($message) {
-    if (isset($_SESSION['admin_username'])) {
-        $_SESSION['message'] = $message;
-        header('Location: ../dashboard.php');
-        exit();
-    }
-}
-
 function redirectWithMessage($location, $message, $type = 'error') {
     $_SESSION[$type . '_message'] = $message;
     header('Location: ' . $location);

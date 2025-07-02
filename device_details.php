@@ -1,6 +1,6 @@
 
 <?php 		    		   
-include 'functions/device_details_action.php';
+include 'actions/device_details_action.php';
 ?>
 
 <!-- HTML Form -->
@@ -19,7 +19,7 @@ include 'functions/device_details_action.php';
 	        <div class="align-items-center" style="margin-top: 5px;">
 	            <a href="changepassword.php" id="showChangePasswordBtn" class="text-muted small mr-1">Change Password</a>
 	            <span>|</span>
-	            <a href="functions/logout_action.php" class="text-muted small ml-1 mr-4">Logout</a>
+	            <a href="actions/logout_action.php" class="text-muted small ml-1 mr-4">Logout</a>
 	        </div>
 	    </div>
 	</div>

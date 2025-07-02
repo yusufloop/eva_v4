@@ -7,7 +7,7 @@
 </head>
 <body>
 <div id="box">
-  <form id="changePasswordForm" action="functions/changepassword_action.php"  method="POST" onsubmit="return validateForm();">
+  <form id="changePasswordForm" action="actions/changepassword_action.php"  method="POST" onsubmit="return validateForm();">
   <h1>Change Password <span>choose a good one!</span></h1>
   <form>
       <input type="password" placeholder="Current Password" id="currentPassword" name="currentPassword" class="password">

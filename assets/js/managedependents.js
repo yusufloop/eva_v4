@@ -14,7 +14,7 @@ document.getElementById("addDependentFormContainer").onclick = function(event) {
 
 function editDependent(dependentID) {
     // Send an AJAX request to the PHP backend to get the device data
-    fetch('functions/managedependents_action.php?dependentID=' + dependentID)
+    fetch('actions/managedependents_action.php?dependentID=' + dependentID)
         .then(response => response.json())
         .then(data => {
             console.log(data); // Log the fetched data to the console to see the query result
