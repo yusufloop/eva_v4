@@ -1,132 +1,265 @@
 
+<?php
+// ============================================================================
+// FILE: includes/header.php
+// ============================================================================
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo isset($pageTitle) ? $pageTitle : 'EVA System'; ?></title>
+    <title><?php echo isset($pageTitle) ? $pageTitle : 'EVA - Emergency Voice Alert System'; ?></title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../assets/images/eva-favicon.ico">
     
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     
-    <!-- Custom CSS for EVA theme -->
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Core EVA Styles -->
     <style>
+        :root {
+            --eva-primary: #4285f4;
+            --eva-primary-dark: #1976d2;
+            --eva-secondary: #6c757d;
+            --eva-success: #28a745;
+            --eva-danger: #dc3545;
+            --eva-warning: #ffc107;
+            --eva-info: #17a2b8;
+            --eva-light: #f8f9fa;
+            --eva-dark: #343a40;
+            --eva-gradient: linear-gradient(135deg, #4285f4 0%, #1976d2 100%);
+            --eva-sidebar-bg: rgba(255, 255, 255, 0.98);
+            --eva-content-bg: rgba(255, 255, 255, 0.95);
+            --eva-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --eva-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.15);
+            --eva-border-radius: 16px;
+            --eva-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            background: linear-gradient(135deg, #4285f4 0%, #1976d2 100%);
+            background: var(--eva-gradient);
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
         }
-        
-        .sidebar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 0 20px 20px 0;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            min-height: calc(100vh - 40px);
-            margin: 20px 0 20px 20px;
+
+        /* Global Layout */
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
         }
-        
+
         .main-content {
-            padding: 40px 10px;
+            flex: 1;
+            padding: 20px;
+            margin-left: 280px;
+            transition: var(--eva-transition);
+            position: relative;
         }
-        
+
+        /* Page Header */
+        .page-header {
+            background: var(--eva-content-bg);
+            backdrop-filter: blur(15px);
+            border-radius: var(--eva-border-radius);
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            box-shadow: var(--eva-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header-content {
+            
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .page-title {
+            color: var(--eva-primary-dark);
+            font-weight: 700;
+            font-size: 28px;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .breadcrumb-eva {
+            color: var(--eva-secondary);
+            font-size: 14px;
+            margin: 5px 0 0 0;
+            font-weight: 400;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* EVA Cards */
         .eva-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: var(--eva-content-bg);
+            backdrop-filter: blur(15px);
             border: none;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border-radius: var(--eva-border-radius);
+            box-shadow: var(--eva-shadow);
+            transition: var(--eva-transition);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .eva-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s ease;
+            box-shadow: var(--eva-shadow-hover);
         }
-        
-        .sidebar .nav-link {
-            color: #666;
-            padding: 12px 20px;
-            border-radius: 0;
-            position: relative;
-            transition: all 0.3s ease;
+
+        .eva-card .card-body {
+            padding: 25px;
         }
-        
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            color: #1976d2;
-            background: linear-gradient(90deg, rgba(25, 118, 210, 0.1), transparent);
-        }
-        
-        .sidebar .nav-link.active::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: #1976d2;
-        }
-        
-        .page-title {
-            color: white;
+
+        /* Buttons */
+        .btn-eva {
+            border-radius: 12px;
             font-weight: 600;
-            margin-bottom: 0;
-        }
-        
-        .breadcrumb-eva {
-            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 24px;
+            transition: var(--eva-transition);
+            border: none;
             font-size: 14px;
-        }
-        
-        .stat-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: white;
-        }
-        
-        .stat-icon.online { background: linear-gradient(135deg, #28a745, #20c997); }
-        .stat-icon.offline { background: linear-gradient(135deg, #dc3545, #e83e8c); }
-        .stat-icon.total { background: linear-gradient(135deg, #007bff, #6f42c1); }
-        .stat-icon.warning { background: linear-gradient(135deg, #ffc107, #fd7e14); }
-        
-        .eva-logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1976d2;
-        }
-        
-        .eva-icon {
-            width: 32px;
-            height: 32px;
-            background: #1976d2;
-            border-radius: 8px;
+            letter-spacing: 0.2px;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-eva:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-eva-primary {
+            background: var(--eva-gradient);
             color: white;
-            font-weight: bold;
-            margin-right: 12px;
         }
-        
+
+        .btn-eva-secondary {
+            background: var(--eva-secondary);
+            color: white;
+        }
+
+        .btn-eva-success {
+            background: var(--eva-success);
+            color: white;
+        }
+
+        .btn-eva-danger {
+            background: var(--eva-danger);
+            color: white;
+        }
+
+        .btn-eva-warning {
+            background: var(--eva-warning);
+            color: var(--eva-dark);
+        }
+
+        /* Form Elements */
+        .form-control-eva {
+            border: 2px solid rgba(66, 133, 244, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: var(--eva-transition);
+            background: white;
+        }
+
+        .form-control-eva:focus {
+            border-color: var(--eva-primary);
+            box-shadow: 0 0 0 0.2rem rgba(66, 133, 244, 0.15);
+        }
+
+        /* Status Indicators */
+        .status-online {
+            color: var(--eva-success);
+        }
+
+        .status-offline {
+            color: var(--eva-danger);
+        }
+
+        .status-warning {
+            color: var(--eva-warning);
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .sidebar {
-                border-radius: 0;
-                margin: 0;
-                min-height: auto;
-            }
             .main-content {
-                padding: 20px 15px;
+                margin-left: 0;
+                padding: 15px;
+            }
+
+            .page-header {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .page-title {
+                font-size: 24px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: flex-start;
             }
         }
+
+        /* Loading Animation */
+        .eva-loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(66, 133, 244, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--eva-primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Utility Classes */
+        .text-eva-primary { color: var(--eva-primary) !important; }
+        .text-eva-secondary { color: var(--eva-secondary) !important; }
+        .bg-eva-light { background-color: var(--eva-light) !important; }
+        .shadow-eva { box-shadow: var(--eva-shadow) !important; }
+        .rounded-eva { border-radius: var(--eva-border-radius) !important; }
     </style>
     
     <!-- Additional CSS -->
@@ -139,15 +272,9 @@
 <body>
 
 <?php
-
-
-
-
-?>
-
-<?php
 // Set global variables for components
 $isAdmin = isset($_SESSION['admin_username']) || (isset($_SESSION['user_data']) && $_SESSION['user_data']['IsAdmin'] == 1);
 $username = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 
            (isset($_SESSION['user_data']) ? $_SESSION['user_data']['Email'] : '');
+$currentUser = getCurrentUser();
 ?>

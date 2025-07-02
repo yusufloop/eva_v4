@@ -14,9 +14,10 @@ $userRole = getUserRole();
 $userId = getCurrentUserId();
 $currentUser = getCurrentUser();
 
+
 // Role-based page configuration
 if (hasRole('admin')):
-    $pageTitle = 'Admin Dashboard';
+    $pageTitle = hasRole('admin') ? 'Admin Dashboard' : 'My Dashboard';
     $dashboardData = getAdminDashboardData();
     $recentActivities = getRecentSystemActivities(10);
     $devices = getAllDevicesWithStatus();
@@ -32,43 +33,16 @@ $additionalCSS = ['../assets/css/dashboard.css', 'components.css'];
 $additionalJS = ['../assets/js/dashboard.js', 'charts.js'];
 ?>
 
-<?php include '../includes/header.php'; ?>
 
+<?php include '../includes/header.php'; ?>
+<?php include '../includes/topbar.php'; ?>
 <div class="dashboard-layout">
     <!-- Sidebar Navigation -->
     <?php  include '../includes/sidebar.php'; ?>
     
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Page Header -->
-        <div class="page-header">
-            <div class="header-content">
-                <h1 class="page-title"><?= $pageTitle ?></h1>
-                <div class="header-actions">
-                    <?php if (hasRole('admin')): ?>
-                        <button class="btn btn-primary" onclick="openAddDeviceModal()">
-                            <i class="fas fa-plus"></i> Add Device
-                        </button>
-                        <button class="btn btn-secondary" onclick="openAddUserModal()">
-                            <i class="fas fa-user-plus"></i> Add User
-                        </button>
-                        <button class="btn btn-warning"><a href="/actions/auth/logout.php">Logout</a></button>
-                    <?php elseif (hasRole('user')): ?>
-                        <button class="btn btn-primary" onclick="openAddDeviceModal()">
-                            <i class="fas fa-plus"></i> Register Device
-                        </button>
-                        <button class="btn btn-warning"><a href="/actions/auth/logout.php">Logout</a></button>
-                    <?php endif; ?>
-                </div>
-            </div>
-            <div class="breadcrumb">
-                <?php if (hasRole('admin')): ?>
-                    <span>Admin</span> > <span>Dashboard</span>
-                <?php else: ?>
-                    <span>Dashboard</span>
-                <?php endif; ?>
-            </div>
-        </div>
+         <?php  include '../includes/topbar.php'; ?>
 
         <!-- Alert Messages -->
         <?php # displayAlerts(); ?>
@@ -178,6 +152,12 @@ $additionalJS = ['../assets/js/dashboard.js', 'charts.js'];
                             <button class="btn btn-sm btn-outline" onclick="openBulkActions()">
                                 <i class="fas fa-cog"></i> Bulk Actions
                             </button>
+                            <button class="btn btn-primary" onclick="openAddDeviceModal()">
+                            <i class="fas fa-plus"></i> Add Device
+                        </button>
+                        <button class="btn btn-secondary" onclick="openAddUserModal()">
+                            <i class="fas fa-user-plus"></i> Add User
+                        </button>
                         <?php endif; ?>
                     </div>
                 </div>

@@ -20,6 +20,7 @@ if (isset($_SESSION['admin_username'])) {
 
 <!DOCTYPE html>
 <html lang="en">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,6 +37,7 @@ if (isset($_SESSION['admin_username'])) {
             <div class="eva-branding">
                 <div class="eva-logo">
                     <div class="logo-circle">
+                         <img src="assets/images/ripple.gif" class="ripple-bg" alt="ripple animation">
                         <span>EVA</span>
                     </div>
                 </div>
@@ -75,7 +77,7 @@ if (isset($_SESSION['admin_username'])) {
 
                 <!-- Login Form -->
                 <div class="form-wrapper" id="loginForm">
-                    <form action="actions/auth/login.php" method="POST" class="auth-form">
+                    <form action="/actions/auth/login.php" method="POST" class="auth-form">
                         <h2>Welcome Back</h2>
                         <p class="form-subtitle">Sign in to your account</p>
 
@@ -116,9 +118,9 @@ if (isset($_SESSION['admin_username'])) {
                                        name="login-password" 
                                        placeholder="Your password" 
                                        required>
-                                <button type="button" class="password-toggle" onclick="togglePassword('login-password')">
+                                <!-- <button type="button" class="password-toggle" onclick="togglePassword('login-password')">
                                     <i class="fas fa-eye"></i>
-                                </button>
+                                </button> -->
                             </div>
                         </div>
 
@@ -128,7 +130,7 @@ if (isset($_SESSION['admin_username'])) {
                                 <span class="checkmark"></span>
                                 Remember me
                             </label>
-                            <a href="auth/forgot-password.php" class="forgot-password">Forgot password?</a>
+                            <a href="/pages/auth/forget-password.php" class="forgot-password">Forgot password?</a>
                         </div>
 
                         <button type="submit" class="submit-btn">
@@ -140,7 +142,7 @@ if (isset($_SESSION['admin_username'])) {
 
                 <!-- Signup Form -->
                 <div class="form-wrapper hidden" id="signupForm">
-                    <form action="actions/auth/register.php" method="POST" class="auth-form" onsubmit="return validateSignupForm()">
+                    <form action="/actions/auth/register.php" method="POST" class="auth-form" onsubmit="return validateSignupForm()">
                         <h2>Create Account</h2>
                         <p class="form-subtitle">Join the EVA platform</p>
 
@@ -174,9 +176,9 @@ if (isset($_SESSION['admin_username'])) {
                                        name="newPassword" 
                                        placeholder="Create password" 
                                        required>
-                                <button type="button" class="password-toggle" onclick="togglePassword('signup-password')">
+                                <!-- <button type="button" class="password-toggle" onclick="togglePassword('signup-password')">
                                     <i class="fas fa-eye"></i>
-                                </button>
+                                </button> -->
                             </div>
                             <div class="password-strength">
                                 <div class="strength-bar">
@@ -195,11 +197,12 @@ if (isset($_SESSION['admin_username'])) {
                                        name="confirmPassword" 
                                        placeholder="Confirm password" 
                                        required>
-                                <button type="button" class="password-toggle" onclick="togglePassword('confirm-password')">
+                                <!-- <button type="button" class="password-toggle" onclick="togglePassword('confirm-password')">
                                     <i class="fas fa-eye"></i>
-                                </button>
+                                </button> -->
                             </div>
                         </div>
+                        
 
                         <div class="password-requirements">
                             <p>Password must contain:</p>

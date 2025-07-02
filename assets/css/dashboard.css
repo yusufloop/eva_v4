@@ -4,10 +4,24 @@
 .dashboard-layout {
     display: flex;
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #fff;
     font-family: 'Inter', sans-serif;
+    position: relative;
 }
 
+.dashboard-layout::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 300px; /* Adjust height as needed */
+    background-image: url('/assets/images/top-bg.png');
+    background-repeat: no-repeat;
+    background-position: top center;
+    background-size: cover; /* or contain, depending on your preference */
+    z-index: 0; /* Put it behind the content */
+}
 .main-content {
     flex: 1;
     padding: 20px;
@@ -17,6 +31,7 @@
 
 /* Page Header */
 .page-header {
+    margin-top:0px;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border-radius: 15px;
@@ -56,6 +71,7 @@
 
 /* Statistics Cards */
 .stats-grid {
+    margin-top: 170px;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;

@@ -17,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['IsAdmin'] = $admin['IsAdmin'];
         $_SESSION['UserID'] = $user['UserID'];
 
-        header('Location: ../pages/dashboard.php');
+        header('Location: /pages/dashboard.php');
         // exit();
 
     }
@@ -27,12 +27,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['UserID'] = $user['UserID'];
 
         // Redirect to protected page
-        header('Location: ../pages/dashboard.php');
+        header('Location: /pages/dashboard.php');
         // exit();
         
     } else {        
         $_SESSION['login_error_message'] = "Invalid credentials or email not verified.";
-        header('Location: ../../index.php'); // Redirect back to index.php
+        header('Location: /index.php'); // Redirect back to index.php
         // exit();
     }
     exit();
