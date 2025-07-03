@@ -9,7 +9,7 @@ function openAddDependentModal() {
 
 // Edit Dependent
 function editDependent(dependentId) {
-    fetch(`../actions/dependents/get.php?dependentId=${dependentId}`)
+    fetch(`../actions/dependent/get.php?dependentId=${dependentId}`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -44,7 +44,7 @@ function editDependent(dependentId) {
 // Delete Dependent
 function deleteDependent(dependentId) {
     if (confirm('Are you sure you want to delete this dependent? This action cannot be undone.')) {
-        window.location.href = `../actions/dependents/delete.php?dependentId=${dependentId}`;
+        window.location.href = `../actions/dependent/delete.php?dependentId=${dependentId}`;
     }
 }
 
@@ -78,20 +78,33 @@ document.addEventListener('DOMContentLoaded', function() {
 function filterDependents() {
     const searchTerm = document.getElementById('dependentSearchBar').value.toLowerCase();
     const statusFilter = document.getElementById('statusFilter').value;
-    const dependentItems = document.querySelectorAll('.dependent-item');
+    const tableRows = document.querySelectorAll('.eva-table tbody tr');
     
-    dependentItems.forEach(item => {
-        const name = item.querySelector('.dependent-name').textContent.toLowerCase();
-        const address = item.querySelector('.dependent-location').textContent.toLowerCase();
-        const status = item.getAttribute('data-status');
+    tableRows.forEach(row => {
+        const firstname = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+        const lastname = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+        const address = row.querySelector('td:nth-child(5)').textContent.toLowerCase();
+        const medicalCondition = row.querySelector('td:nth-child(7)').textContent.toLowerCase();
+        const status = row.getAttribute('data-status');
         
-        const matchesSearch = name.includes(searchTerm) || address.includes(searchTerm);
-        const matchesStatus = !statusFilter || status === statusFilter;
+        const matchesSearch = firstname.includes(searchTerm) || 
+                            lastname.includes(searchTerm) || 
+                            address.includes(searchTerm) ||
+                            medicalCondition.includes(searchTerm);
+        
+        let matchesStatus = true;
+        if (statusFilter) {
+            if (statusFilter === 'medical-condition') {
+                matchesStatus = medicalCondition !== 'none' && medicalCondition.trim() !== '';
+            } else {
+                matchesStatus = status === statusFilter;
+            }
+        }
         
         if (matchesSearch && matchesStatus) {
-            item.style.display = 'flex';
+            row.style.display = '';
         } else {
-            item.style.display = 'none';
+            row.style.display = 'none';
         }
     });
 }

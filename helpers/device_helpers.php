@@ -23,7 +23,23 @@ function getAllUsers() {
 function getUserDependents($userId) {
    $pdo = getDatabase(); 
     try {
-        $stmt = $pdo->prepare('SELECT DependentID, Firstname, Lastname, Address FROM Dependents WHERE UserIDFK = ? ORDER BY Firstname, Lastname');
+        $stmt = $pdo->prepare('
+            SELECT 
+                d.DependentID, 
+                d.Firstname, 
+                d.Lastname, 
+                d.Gender,
+                d.DOB,
+                d.Address, 
+                d.PostalCode,
+                d.MedicalCondition,
+                COUNT(e.SerialNoFK) as DeviceCount
+            FROM Dependents d 
+            LEFT JOIN EVA e ON d.DependentID = e.DependentIDFK
+            WHERE d.UserIDFK = ? 
+            GROUP BY d.DependentID
+            ORDER BY d.Firstname, d.Lastname
+        ');
         $stmt->execute([$userId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
@@ -33,15 +49,28 @@ function getUserDependents($userId) {
 }
 
 /**
- * Get all dependents (for admin)
+ * Get all dependents (for admin) - Enhanced with all required fields
  */
 function getAllDependents() {
    $pdo = getDatabase(); 
     try {
         $stmt = $pdo->prepare('
-            SELECT d.DependentID, d.Firstname, d.Lastname, d.Address, u.Email ,d.Gender, d.DOB
+            SELECT 
+                d.DependentID, 
+                d.Firstname, 
+                d.Lastname, 
+                d.Gender,
+                d.DOB,
+                d.Address, 
+                d.PostalCode,
+                d.MedicalCondition,
+                d.UserIDFK,
+                u.Email as UserEmail,
+                COUNT(e.SerialNoFK) as DeviceCount
             FROM Dependents d 
-            JOIN Users u ON d.UserIDFK = u.UserID 
+            LEFT JOIN Users u ON d.UserIDFK = u.UserID 
+            LEFT JOIN EVA e ON d.DependentID = e.DependentIDFK
+            GROUP BY d.DependentID
             ORDER BY u.Email, d.Firstname, d.Lastname
         ');
         $stmt->execute();
