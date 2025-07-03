@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user = $stmt->fetch();
 
     if (password_verify($password, $user['Password']) && $user['IsAdmin'] === "Yes") {
-        $_SESSION['admin_username'] = $email;
+        $_SESSION['Email'] = $email;
         $_SESSION['IsAdmin'] = $admin['IsAdmin'];
         $_SESSION['UserID'] = $user['UserID'];
 
@@ -23,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     if (password_verify($password, $user['Password'])) {
         // Set session variables
-        $_SESSION['username'] = $email;
+        $_SESSION['Email'] = $email;
         $_SESSION['UserID'] = $user['UserID'];
 
         // Redirect to protected page

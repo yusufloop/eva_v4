@@ -6,7 +6,7 @@
  */
 function requireAuth() {
     if (!isLoggedIn()) {
-        header('Location: /login');
+        header('Location: ../../index.php');
         exit();
     }
 }
@@ -15,16 +15,16 @@ function requireAuth() {
  * Check if user is logged in
  */
 function isLoggedIn() {
-    return isset($_SESSION['username']) || isset($_SESSION['admin_username']);
+    return isset($_SESSION['username']) || isset($_SESSION['Email']);
 }
 
 /**
  * Get current user role
  */
 function getUserRole() {
-    if (isset($_SESSION['admin_username'])):
+    if (isset($_SESSION['Email'])):
         return 'admin';
-    elseif (isset($_SESSION['username'])):
+    elseif (isset($_SESSION['Email'])):
         return 'user';
     else:
         return 'guest';
@@ -64,28 +64,19 @@ function isUser() {
  * Get current user ID
  */
 function getCurrentUserId() {
+   
     return $_SESSION['UserID'] ?? null;
 }
 
 /**
  * Get current user data
  */
-function getCurrentUser() {
-    return $_SESSION['user_data'] ?? null;
+function getCurrentUserEmail() {
+    
+    return $_SESSION['Email'] ?? null;
 }
 
-/**
- * Get current username/email
- */
-function getCurrentUsername() {
-    if (isset($_SESSION['admin_username'])):
-        return $_SESSION['admin_username'];
-    elseif (isset($_SESSION['username'])):
-        return $_SESSION['username'];
-    else:
-        return null;
-    endif;
-}
+
 
 /**
  * Login user and set session data

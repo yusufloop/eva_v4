@@ -1,9 +1,4 @@
 
-<?php
-// ============================================================================
-// FILE: includes/header.php
-// ============================================================================
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,13 +55,31 @@
             overflow-x: hidden;
         }
 
-        /* Global Layout */
         .dashboard-layout {
-            display: flex;
-            min-height: 100vh;
-            position: relative;
-        }
+    display: flex;
+    min-height: 100vh;
+    background: #fff;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+}
 
+.dashboard-layout, .main-content {
+    margin-top: 70px; /* Adjust this value to match your topbar height */
+}
+
+.dashboard-layout::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 300px; /* Adjust height as needed */
+    background-image: url('/assets/images/top-bg.png');
+    background-repeat: no-repeat;
+    background-position: top center;
+    background-size: cover; /* or contain, depending on your preference */
+    z-index: 0; /* Put it behind the content */
+}
         .main-content {
             flex: 1;
             padding: 20px;
@@ -272,9 +285,12 @@
 <body>
 
 <?php
+
+require_once '../helpers/auth_helper.php';
 // Set global variables for components
-$isAdmin = isset($_SESSION['admin_username']) || (isset($_SESSION['user_data']) && $_SESSION['user_data']['IsAdmin'] == 1);
-$username = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 
-           (isset($_SESSION['user_data']) ? $_SESSION['user_data']['Email'] : '');
-$currentUser = getCurrentUser();
+$isAdmin = isset($_SESSION['Email']) || (isset($_SESSION['Email']) && $_SESSION['Email']['IsAdmin'] == 1);
+
+$currentUser = getCurrentUserEmail();
+$userId = getCurrentUserID();
+
 ?>

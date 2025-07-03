@@ -230,7 +230,7 @@ function fetchDependents(userId) {
     const hiddenDependentInput = document.getElementById("existingDependent");
 
     // Return the fetch Promise
-    return fetch(`actions/fetch_dependents.php?userId=${userId}`)
+    return fetch(`actions/dependent/get.php?userId=${userId}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);

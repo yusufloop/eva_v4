@@ -177,25 +177,7 @@ function openBulkActions() {
     alert('Bulk actions functionality coming soon!');
 }
 
-// Auto-refresh for real-time updates (optional)
-function initializeAutoRefresh() {
-    // Refresh statistics every 30 seconds
-    setInterval(function() {
-        refreshStatistics();
-    }, 30000);
-}
 
-function refreshStatistics() {
-    // AJAX call to refresh dashboard statistics
-    fetch('/api/dashboard/stats')
-        .then(response => response.json())
-        .then(data => {
-            updateStatistics(data);
-        })
-        .catch(error => {
-            console.error('Failed to refresh statistics:', error);
-        });
-}
 
 function updateStatistics(data) {
     // Update statistic numbers on the page

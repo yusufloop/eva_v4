@@ -9,6 +9,7 @@ define('MIN_PASSWORD_LENGTH', 6);
 // Session settings
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+  
 }
 
 function redirectWithMessage($location, $message, $type = 'error') {

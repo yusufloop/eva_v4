@@ -383,68 +383,8 @@ function updateInventoryStatus($pdo, $serialNo, $status) {
     }
 }
 
-/**
- * Get all devices with their details
- * 
- * @param PDO $pdo Database connection
- * @param int|null $userId Optional user ID to filter by user's devices
- * @return array Array of devices
- */
-function getAllDevicesWithStatus($pdo, $userId = null) {
-    try {
-        $sql = '
-            SELECT 
-                e.EVAID,
-                e.SerialNoFK as SerialNo,
-                e.EmergencyNo1,
-                e.EmergencyNo2,
-                e.RegisteredDate,
-                e.DeviceStatus,
-                e.LastOnline,
-                u.Email as user_email,
-                u.UserID as user_id,
-                d.Firstname,
-                d.Lastname,
-                d.Address,
-                CONCAT(d.Firstname, " ", d.Lastname) as dependent_name,
-                i.DeviceType,
-                CASE 
-                    WHEN e.LastOnline > DATE_SUB(NOW(), INTERVAL 5 MINUTE) THEN "online"
-                    ELSE "offline"
-                END as status,
-                d.Address as location
-            FROM EVA e
-            INNER JOIN Dependents d ON e.DependentIDFK = d.DependentID
-            INNER JOIN Users u ON e.UserIDFK = u.UserID
-            LEFT JOIN Inventory i ON e.SerialNoFK = i.SerialNo
-        ';
-        
-        if ($userId) {
-            $sql .= ' WHERE e.UserIDFK = ?';
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$userId]);
-        } else {
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute();
-        }
-        
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (Exception $e) {
-        error_log("Get All Devices Error: " . $e->getMessage());
-        return [];
-    }
-}
 
-/**
- * Get user's devices with status
- * 
- * @param PDO $pdo Database connection
- * @param int $userId User ID
- * @return array Array of user's devices
- */
-function getUserDevicesWithStatus($pdo, $userId) {
-    return getAllDevicesWithStatus($pdo, $userId);
-}
+
 
 /**
  * Get device details by serial number

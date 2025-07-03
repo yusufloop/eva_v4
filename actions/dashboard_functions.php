@@ -96,73 +96,8 @@ function getUserDashboardData($userId) {
     }
 }
 
-/**
- * Get all devices with status for admin
- */
-function getAllDevicesWithStatus() {
-    $pdo = getDatabase();
-    
-    try {
-        $stmt = $pdo->prepare('
-            SELECT 
-                e.SerialNoFK as SerialNo,
-                e.DeviceStatus as status,
-                e.EmergencyNo1,
-                e.EmergencyNo2,
-                u.Email as user_email,
-                u.UserID as user_id,
-                d.Firstname,
-                d.Lastname,
-                d.Address,
-                CONCAT(d.Firstname, " ", d.Lastname) as dependent_name,
-                CONCAT(d.Address) as location
-            FROM EVA e
-            INNER JOIN Users u ON e.UserIDFK = u.UserID
-            INNER JOIN Dependents d ON e.DependentIDFK = d.DependentID
-            ORDER BY e.RegisteredDate DESC
-            LIMIT 20
-        ');
-        $stmt->execute();
-        return $stmt->fetchAll();
-        
-    } catch (PDOException $e) {
-        error_log("Get all devices error: " . $e->getMessage());
-        return [];
-    }
-}
 
-/**
- * Get user devices with status
- */
-function getUserDevicesWithStatus($userId) {
-    $pdo = getDatabase();
-    
-    try {
-        $stmt = $pdo->prepare('
-            SELECT 
-                e.SerialNoFK as SerialNo,
-                e.DeviceStatus as status,
-                e.EmergencyNo1,
-                e.EmergencyNo2,
-                e.UserIDFK as user_id,
-                d.Firstname,
-                d.Lastname,
-                d.Address,
-                CONCAT(d.Firstname, " ", d.Lastname) as dependent_name,
-                CONCAT(d.Address) as location
-            FROM EVA e
-            INNER JOIN Dependents d ON e.DependentIDFK = d.DependentID
-            WHERE e.UserIDFK = ?
-            ORDER BY e.RegisteredDate DESC
-        ');
-        $stmt->execute([$userId]);
-        return $stmt->fetchAll();
-        
-    } catch (PDOException $e) {
-        error_log("Get user devices error: " . $e->getMessage());
-        return [];
-    }
-}
+
 
 /**
  * Get recent system activities
@@ -273,60 +208,7 @@ function formatTimeAgo($datetime) {
     return date('M j, Y', strtotime($datetime));
 }
 
-/**
- * Get all users for admin dropdown
- */
-function getAllUsers() {
-    $pdo = getDatabase();
-    
-    try {
-        $stmt = $pdo->prepare('SELECT UserID, Email FROM Users WHERE IsVerified = 1 ORDER BY Email');
-        $stmt->execute();
-        return $stmt->fetchAll();
-    } catch (PDOException $e) {
-        error_log("Get all users error: " . $e->getMessage());
-        return [];
-    }
-}
 
-/**
- * Get all dependents for admin
- */
-function getAllDependents() {
-    $pdo = getDatabase();
-    
-    try {
-        $stmt = $pdo->prepare('
-            SELECT DependentID, Firstname, Lastname, Address 
-            FROM Dependents 
-            ORDER BY Firstname, Lastname
-        ');
-        $stmt->execute();
-        return $stmt->fetchAll();
-    } catch (PDOException $e) {
-        error_log("Get all dependents error: " . $e->getMessage());
-        return [];
-    }
-}
 
-/**
- * Get user dependents
- */
-function getUserDependents($userId) {
-    $pdo = getDatabase();
-    
-    try {
-        $stmt = $pdo->prepare('
-            SELECT DependentID, Firstname, Lastname, Address 
-            FROM Dependents 
-            WHERE UserIDFK = ?
-            ORDER BY Firstname, Lastname
-        ');
-        $stmt->execute([$userId]);
-        return $stmt->fetchAll();
-    } catch (PDOException $e) {
-        error_log("Get user dependents error: " . $e->getMessage());
-        return [];
-    }
-}
+
 ?>

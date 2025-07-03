@@ -1,16 +1,9 @@
 <?php
 session_start();
-require 'config.php';
+require_once '../config/config.php';
+require_once '../helpers/auth_helper.php';
 
-if (isset($_SESSION['admin_username'])) {
-    header("Location: admin_dashboard.php");
-    exit();
-}
-
-if (!isset($_SESSION['username'])) {
-    header("Location: ../index.php");
-    exit();
-}
+requireAuth();
 
 // Fetch user ID from the users table
 $UserID = $_SESSION['UserID'];

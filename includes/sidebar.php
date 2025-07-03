@@ -420,20 +420,20 @@
             </nav>
             
             <!-- User Info Section -->
-            <div class="sidebar-footer">
+            <!-- <div class="sidebar-footer">
                 <div class="user-info">
                     <div class="user-avatar">
                         <i class="bi bi-person-circle"></i>
                     </div>
                     <div class="user-details">
-                        <span class="user-name"><?php echo htmlspecialchars($username); ?></span>
+                        <span class="user-name"><?php echo htmlspecialchars($currentUser); ?></span>
                         <span class="user-role">User</span>
                     </div>
                 </div>
                 <a href="../actions/auth/logout.php" class="logout-btn" title="Logout">
                     <i class="bi bi-box-arrow-right"></i>
                 </a>
-            </div>
+            </div> -->
         </div>
     </div>
 </div>

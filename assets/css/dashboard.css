@@ -78,23 +78,7 @@
     margin-bottom: 30px;
 }
 
-.stat-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 25px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
 
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-}
 
 .stat-icon {
     width: 60px;
@@ -301,12 +285,12 @@
     font-weight: 500;
 }
 
-.device-status.status-online {
+.device-status.status-Active {
     background: rgba(72, 187, 120, 0.1);
     color: #38a169;
 }
 
-.device-status.status-offline {
+.device-status.status-Inactive {
     background: rgba(245, 101, 101, 0.1);
     color: #e53e3e;
 }
@@ -689,9 +673,7 @@
         grid-template-columns: 1fr;
     }
     
-    .stat-card {
-        padding: 20px;
-    }
+   
     
     .stat-number {
         font-size: 2rem;

@@ -1,18 +1,19 @@
 <?php
 
-require '../helpers/auth_helper.php';
-// require_once './actions/device_functions.php';
+
+require '../helpers/device_helpers.php';
 // require_once './actions/user_functions.php';
 require '../actions/dashboard_functions.php';
-// require_once './includes/alerts.php';
+require '../helpers/component_helper.php'; 
 
-// Require authentication
-requireAuth();
 
-// Get user role and data
-$userRole = getUserRole();
-$userId = getCurrentUserId();
-$currentUser = getCurrentUser();
+ob_start();
+
+// Page assets
+$additionalCSS = ['../assets/css/dashboard.css','../assets/css/components/stats-card.css','../assets/css/components/panel.css',];
+$additionalJS = ['../assets/js/dashboard.js', ];
+
+include '../includes/header.php'; 
 
 
 // Role-based page configuration
@@ -21,252 +22,164 @@ if (hasRole('admin')):
     $dashboardData = getAdminDashboardData();
     $recentActivities = getRecentSystemActivities(10);
     $devices = getAllDevicesWithStatus();
+   
 elseif (hasRole('user')):
     $pageTitle = 'My Dashboard';
     $dashboardData = getUserDashboardData($userId);
     $recentActivities = getUserRecentActivities($userId, 5);
     $devices = getUserDevicesWithStatus($userId);
 endif;
-
-// Page assets
-$additionalCSS = ['../assets/css/dashboard.css', 'components.css'];
-$additionalJS = ['../assets/js/dashboard.js', 'charts.js'];
 ?>
 
 
-<?php include '../includes/header.php'; ?>
+
 <?php include '../includes/topbar.php'; ?>
 <div class="dashboard-layout">
     <!-- Sidebar Navigation -->
     <?php  include '../includes/sidebar.php'; ?>
     
-    <!-- Main Content -->
+<!-- Main Content -->
     <div class="main-content">
          <?php  include '../includes/topbar.php'; ?>
 
         <!-- Alert Messages -->
         <?php # displayAlerts(); ?>
 
-        <!-- Statistics Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon online">
-                    <i class="fas fa-wifi"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">
-                        <?php if (hasRole('admin')): ?>
-                            <span class="status-text">Online</span>
-                            <span class="total-text"><?= $dashboardData['total_devices'] ?> Total</span>
-                        <?php else: ?>
-                            <span class="status-text">My Devices</span>
-                            <span class="total-text">Active</span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="stat-number online">
-                        <?= $dashboardData['online_devices'] ?>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon offline">
-                    <i class="fas fa-wifi-slash"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">
-                        <span class="status-text">Offline</span>
-                        <?php if (hasRole('admin')): ?>
-                            <span class="total-text">Devices</span>
-                        <?php else: ?>
-                            <span class="total-text">Inactive</span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="stat-number offline">
-                        <?= $dashboardData['offline_devices'] ?>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon total">
-                    <i class="fas fa-mobile-alt"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">
-                        <span class="status-text">Total Devices</span>
-                        <?php if (hasRole('admin')): ?>
-                            <span class="total-text">System Wide</span>
-                        <?php else: ?>
-                            <span class="total-text">Registered</span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="stat-number total">
-                        <?= $dashboardData['total_devices'] ?>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card emergency">
-                <div class="stat-icon emergency">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">
-                        <span class="status-text">Active Emergencies</span>
-                        <span class="total-text">Requiring Attention</span>
-                    </div>
-                    <div class="stat-number emergency">
-                        <?= $dashboardData['active_emergencies'] ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Dashboard Content Grid -->
-        <div class="dashboard-grid">
-            <!-- Device Management Panel -->
-            <div class="dashboard-panel">
-                <div class="panel-header">
-                    <h2 class="panel-title">
-                        <i class="fas fa-mobile-alt"></i>
-                        <?php if (hasRole('admin')): ?>
-                            Device Management
-                        <?php else: ?>
-                            My Devices
-                        <?php endif; ?>
-                    </h2>
-                    <div class="panel-actions">
-                        <div class="search-container">
-                            <input type="text" id="deviceSearchBar" placeholder="Search devices..." class="search-input">
-                            <i class="fas fa-search search-icon"></i>
-                        </div>
-                        <div class="filter-dropdown">
-                            <select id="statusFilter" class="filter-select">
-                                <option value="">All Status</option>
-                                <option value="active">active</option>
-                                <option value="inactive">inactive</option>
-                            </select>
-                        </div>
-                        <?php if (hasRole('admin')): ?>
-                            <button class="btn btn-sm btn-outline" onclick="openBulkActions()">
-                                <i class="fas fa-cog"></i> Bulk Actions
-                            </button>
-                            <button class="btn btn-primary" onclick="openAddDeviceModal()">
-                            <i class="fas fa-plus"></i> Add Device
-                        </button>
-                        <button class="btn btn-secondary" onclick="openAddUserModal()">
-                            <i class="fas fa-user-plus"></i> Add User
-                        </button>
-                        <?php endif; ?>
-                    </div>
-                </div>
-                
-                <div class="panel-content">
-                    <?php if (empty($devices)): ?>
-                        <div class="empty-state">
-                            <i class="fas fa-mobile-alt"></i>
-                            <h3>No Devices Found</h3>
-                            <p>
-                                <?php if (hasRole('admin')): ?>
-                                    No devices are currently registered in the system.
-                                <?php else: ?>
-                                    You haven't registered any devices yet.
-                                <?php endif; ?>
-                            </p>
-                            <button class="btn btn-primary" onclick="openAddDeviceModal()">
-                                <i class="fas fa-plus"></i> 
-                                <?= hasRole('admin') ? 'Add Device' : 'Register Device' ?>
-                            </button>
-                        </div>
-                    <?php else: ?>
-                        <div class="device-list">
-                            <?php foreach ($devices as $device): ?>
-                                <div class="device-item" data-status="<?= $device['status'] ?>">
-                                    <div class="device-info">
-                                        <div class="device-header">
-                                            <span class="device-serial"><?= htmlspecialchars($device['SerialNo']) ?></span>
-                                            <span class="device-status status-<?= $device['status'] ?>">
-                                                <i class="fas fa-circle"></i>
-                                                <?= ucfirst($device['status']) ?>
-                                            </span>
-                                        </div>
-                                        <div class="device-details">
-                                            <div class="device-location">
-                                                <i class="fas fa-map-marker-alt"></i>
-                                                <?= htmlspecialchars($device['location'] ?? 'No Location') ?>
-                                            </div>
-                                            <?php if (hasRole('admin')): ?>
-                                                <div class="device-user">
-                                                    <i class="fas fa-user"></i>
-                                                    <?= htmlspecialchars($device['user_email']) ?>
-                                                </div>
-                                            <?php endif; ?>
-                                            <div class="device-dependent">
-                                                <i class="fas fa-users"></i>
-                                                <?= htmlspecialchars($device['dependent_name']) ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="device-actions">
-                                        <button class="btn-icon" onclick="viewDevice('<?= $device['SerialNo'] ?>')" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn-icon" onclick="editDevice('<?= $device['SerialNo'] ?>')" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <?php if (hasRole('admin') || $device['user_id'] == $userId): ?>
-                                            <button class="btn-icon btn-danger" onclick="deleteDevice('<?= $device['SerialNo'] ?>')" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <!-- Recent Activities Panel -->
-            <div class="dashboard-panel">
-                <div class="panel-header">
-                    <h2 class="panel-title">
-                        <i class="fas fa-clock"></i>
-                        Recent Activities
-                    </h2>
-                    <a href="<?= hasRole('admin') ? '/admin/alerts' : '/alerts' ?>" class="btn btn-sm btn-outline">
-                        See All
-                    </a>
-                </div>
-                
-                <div class="panel-content">
-                    <?php if (empty($recentActivities)): ?>
-                        <div class="empty-state small">
-                            <i class="fas fa-clock"></i>
-                            <p>No recent activities</p>
-                        </div>
-                    <?php else: ?>
-                        <div class="activity-list">
-                            <?php foreach ($recentActivities as $activity): ?>
-                                <div class="activity-item">
-                                    <div class="activity-icon activity-<?= $activity['type'] ?>">
-                                        <i class="fas fa-<?= getActivityIcon($activity['type']) ?>"></i>
-                                    </div>
-                                    <div class="activity-content">
-                                        <div class="activity-title"><?= htmlspecialchars($activity['title']) ?></div>
-                                        <div class="activity-description"><?= htmlspecialchars($activity['description']) ?></div>
-                                        <div class="activity-time"><?= formatTimeAgo($activity['created_at']) ?></div>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </div>
+       <div class="stats-grid">
+    <?= $templates->render('stats-card', [
+        'type' => 'online',
+        'icon' => 'fas fa-wifi',
+        'title' => 'Online',
+        'subtitle' => hasRole('admin') ? $dashboardData['total_devices'] . ' Total' : 'Active',
+        'value' => $dashboardData['online_devices']
+    ]) ?>
+    
+    <?= $templates->render('stats-card', [
+        'type' => 'offline',
+        'icon' => 'fas fa-wifi-slash',
+        'title' => 'Offline',
+        'subtitle' => hasRole('admin') ? 'Devices' : 'Inactive',
+        'value' => $dashboardData['offline_devices']
+    ]) ?>
+    
+    <?= $templates->render('stats-card', [
+        'type' => 'total',
+        'icon' => 'fas fa-mobile-alt',
+        'title' => 'Total Devices',
+        'subtitle' => hasRole('admin') ? 'System Wide' : 'Registered',
+        'value' => $dashboardData['total_devices']
+    ]) ?>
+    
+    <?= $templates->render('stats-card', [
+        'type' => 'emergency',
+        'icon' => 'fas fa-exclamation-triangle',
+        'title' => 'Active Emergencies',
+        'subtitle' => 'Requiring Attention',
+        'value' => $dashboardData['active_emergencies']
+    ]) ?>
 </div>
+
+<?php ob_start(); ?>
+        <div class="search-container">
+            <input type="text" id="deviceSearchBar" placeholder="Search devices..." class="search-input">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+        <div class="filter-dropdown">
+            <select id="statusFilter" class="filter-select">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </div>
+        <?php if (hasRole('admin')): ?>
+            <button class="btn btn-sm btn-outline" onclick="openBulkActions()">
+                <i class="fas fa-cog"></i> Bulk Actions
+            </button>
+            <button class="btn btn-primary" onclick="openAddDeviceModal()">
+                <i class="fas fa-plus"></i> Add Device
+            </button>
+            <button class="btn btn-secondary" onclick="openAddUserModal()">
+                <i class="fas fa-user-plus"></i> Add User
+            </button>
+        <?php endif; ?>
+<?php $devicesHeaderActions = ob_get_clean(); ?>
+
+<?php ob_start(); ?>
+
+<?php if (empty($devices)): ?>
+    <div class="empty-state">
+        <i class="fas fa-mobile-alt"></i>
+        <h3>No Devices Found</h3>
+        <p>
+            <?php if (hasRole('admin')): ?>
+                No devices are currently registered in the system.
+            <?php else: ?>
+                You haven't registered any devices yet.
+            <?php endif; ?>
+        </p>
+        <button class="btn btn-primary" onclick="openAddDeviceModal()">
+            <i class="fas fa-plus"></i> 
+            <?= hasRole('admin') ? 'Add Device' : 'Register Device' ?>
+        </button>
+    </div>
+<?php else: ?>
+    <div class="device-list">
+        <?php foreach ($devices as $device): ?>
+            <div class="device-item" data-status="<?= $device['DeviceStatus'] ?>">
+                <div class="device-info">
+                    <div class="device-header">
+                        <span class="device-serial"><?= htmlspecialchars($device['SerialNo']) ?></span>
+                        <span class="device-status status-<?= $device['DeviceStatus'] ?>">
+                            <i class="fas fa-circle"></i>
+                            <?= ucfirst($device['DeviceStatus']) ?>
+                        </span>
+                    </div>
+                    <div class="device-details">
+                        <div class="device-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <?= htmlspecialchars($device['Address'] ?? 'No Location') ?>
+                        </div>
+                        <?php if (hasRole('admin')): ?>
+                            <div class="device-user">
+                                <i class="fas fa-user"></i>
+                                <?= htmlspecialchars($device['Email']) ?>
+                            </div>
+                        <?php endif; ?>
+                        <div class="device-dependent">
+                            <i class="fas fa-users"></i>
+                            <?= htmlspecialchars($device['Firstname'] . ' ' . $device['Lastname']) ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="device-actions">
+                    <button class="btn-icon" onclick="viewDevice('<?= $device['SerialNo'] ?>')" title="View Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-icon" onclick="editDevice('<?= $device['SerialNo'] ?>')" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <?php if (hasRole('admin') || $device['user_id'] == $userId): ?>
+                        <button class="btn-icon btn-danger" onclick="deleteDevice('<?= $device['SerialNo'] ?>')" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
+
+<?php $deviceContent = ob_get_clean();?>
+
+<?php 
+echo $templates->render('panel', [
+    'icon' => 'fas fa-clock',
+    'title' => 'Recent Activities',
+    'headerActions' => $devicesHeaderActions,
+    'content' => $deviceContent
+]);
+
+?>
 
 <!-- Add Device Modal -->
 <div id="addDeviceModal" class="modal-overlay">
@@ -278,7 +191,9 @@ $additionalJS = ['../assets/js/dashboard.js', 'charts.js'];
             </button>
         </div>
         
-        <form action="/device/add" method="POST" class="modal-form">
+        <form method="POST" class="modal-form">
+            <input type="hidden" name="add_device" value="1">
+            
             <?php if (hasRole('admin')): ?>
                 <!-- Admin can assign to any user -->
                 <div class="form-group">
@@ -302,22 +217,23 @@ $additionalJS = ['../assets/js/dashboard.js', 'charts.js'];
             <div class="form-row">
                 <div class="form-group">
                     <label for="emergencyNo1">Emergency Number 1:</label>
-                    <input type="tel" id="emergencyNo1" name="emergency_no1" required>
+                    <input type="tel" id="emergencyNo1" name="emergency_no1" placeholder="+60123456789" required>
                 </div>
                 <div class="form-group">
                     <label for="emergencyNo2">Emergency Number 2:</label>
-                    <input type="tel" id="emergencyNo2" name="emergency_no2" required>
+                    <input type="tel" id="emergencyNo2" name="emergency_no2" placeholder="+60123456789" required>
                 </div>
             </div>
             
-            <div class="form-group">
+             <div class="form-group">
                 <label for="serialNo">Device Serial Number:</label>
                 <input type="text" id="serialNo" name="serial_no" placeholder="Enter device serial number" required>
+                <small>Serial number found on your device label</small>
             </div>
             
             <div class="form-group">
                 <label for="dependentSelect">Assign to Family Member:</label>
-                <select id="dependentSelect" name="dependent_option" required>
+                <select id="dependentSelect" name="dependent_option" required onchange="toggleDependentFields()">
                     <option value="">Select Option</option>
                     <option value="existing">Existing Family Member</option>
                     <option value="new">Add New Family Member</option>
@@ -335,7 +251,9 @@ $additionalJS = ['../assets/js/dashboard.js', 'charts.js'];
                     ?>
                         <option value="<?= $dependent['DependentID'] ?>">
                             <?= htmlspecialchars($dependent['Firstname'] . ' ' . $dependent['Lastname']) ?>
-                            - <?= htmlspecialchars($dependent['Address']) ?>
+                            <?php if (isset($dependent['Email'])): ?>
+                                (<?= htmlspecialchars($dependent['Email']) ?>)
+                            <?php endif; ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -346,11 +264,11 @@ $additionalJS = ['../assets/js/dashboard.js', 'charts.js'];
                 <div class="form-row">
                     <div class="form-group">
                         <label for="firstname">First Name:</label>
-                        <input type="text" id="firstname" name="firstname">
+                        <input type="text" id="firstname" name="firstname" placeholder="First Name">
                     </div>
                     <div class="form-group">
                         <label for="lastname">Last Name:</label>
-                        <input type="text" id="lastname" name="lastname">
+                        <input type="text" id="lastname" name="lastname" placeholder="Last Name">
                     </div>
                 </div>
                 
@@ -365,23 +283,23 @@ $additionalJS = ['../assets/js/dashboard.js', 'charts.js'];
                     </div>
                     <div class="form-group">
                         <label for="dob">Date of Birth:</label>
-                        <input type="date" id="dob" name="dob" value="2000-01-01">
+                        <input type="date" id="dob" name="dob">
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="address">Address:</label>
-                    <input type="text" id="address" name="address" placeholder="Complete address">
+                    <input type="text" id="address" name="address" placeholder="Full Address">
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="postal_code">Postal Code:</label>
-                        <input type="text" id="postal_code" name="postal_code">
+                        <label for="postalCode">Postal Code:</label>
+                        <input type="text" id="postalCode" name="postal_code" placeholder="12345">
                     </div>
                     <div class="form-group">
-                        <label for="medical_condition">Medical Condition:</label>
-                        <input type="text" id="medical_condition" name="medical_condition" placeholder="Any medical conditions">
+                        <label for="medicalCondition">Medical Condition:</label>
+                        <input type="text" id="medicalCondition" name="medical_condition" placeholder="Any medical conditions">
                     </div>
                 </div>
             </div>
@@ -410,7 +328,7 @@ $additionalJS = ['../assets/js/dashboard.js', 'charts.js'];
             </button>
         </div>
         
-        <form action="/auth/register" method="POST" class="modal-form">
+        <form action="/actions/auth/register.php" method="POST" class="modal-form">
             <div class="form-group">
                 <label for="userEmail">Email Address:</label>
                 <input type="email" id="userEmail" name="email" placeholder="user@example.com" required>
