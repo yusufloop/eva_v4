@@ -42,21 +42,6 @@ if ($isAdmin) {
     $stats = getCallHistoryStats($userId);
 }
 
-// Filter options for search
-$statusOptions = [
-    '' => 'All Status',
-    'Unanswered' => 'Unanswered',
-    'Active' => 'Active', 
-    'Resolved' => 'Resolved',
-    'Cancelled' => 'Cancelled'
-];
-
-$directionOptions = [
-    '' => 'All Directions',
-    'Incoming' => 'Incoming',
-    'Outgoing' => 'Outgoing'
-];
-
 // Include header
 include '../includes/header.php';
 ?>
@@ -123,11 +108,11 @@ include '../includes/header.php';
                 </div>
                 <div class="stat-content">
                     <div class="stat-label">
-                        <span class="status-text">Incoming</span>
-                        <span class="total-text">vs Outgoing</span>
+                        <span class="status-text">Active</span>
+                        <span class="total-text">In Progress</span>
                     </div>
                     <div class="stat-number offline">
-                        <?= $stats['incoming_calls'] ?? 0 ?>/<?= $stats['outgoing_calls'] ?? 0 ?>
+                        <?= $stats['active_calls'] ?? 0 ?>
                     </div>
                 </div>
             </div>
@@ -137,33 +122,36 @@ include '../includes/header.php';
         <div class="eva-card">
             <div class="card-header">
                 <div class="header-content">
-                    <h2 class="page-title">
-                        <i class="bi bi-telephone-fill me-2"></i>
-                        <?= $isAdmin ? 'All Call Logs' : 'My Call Logs' ?>
-                    </h2>
+                    <div class="header-left">
+                        <div class="call-log-icon">
+                            📞
+                        </div>
+                        <div class="header-text">
+                            <h2>Call Log</h2>
+                            <p>Call Log activities</p>
+                        </div>
+                    </div>
                     
-                    <!-- Search and Filter Controls -->
+                    <!-- Filter Controls -->
                     <div class="header-actions">
-                        <div class="search-container">
-                            <input type="text" id="searchInput" placeholder="Search calls..." class="form-control">
-                            <i class="bi bi-search search-icon"></i>
+                        <div class="filter-group">
+                            <select id="statusFilter" class="filter-select">
+                                <option value="">Filter</option>
+                                <option value="unanswered">Unanswered</option>
+                                <option value="active">Active</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
                         </div>
                         
-                        <select id="statusFilter" class="form-control">
-                            <?php foreach ($statusOptions as $value => $label): ?>
-                                <option value="<?= $value ?>"><?= $label ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        
-                        <select id="directionFilter" class="form-control">
-                            <?php foreach ($directionOptions as $value => $label): ?>
-                                <option value="<?= $value ?>"><?= $label ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        
-                        <button class="btn btn-outline-primary" onclick="exportCallLogs()">
-                            <i class="bi bi-download"></i> Export
-                        </button>
+                        <div class="filter-group">
+                            <select id="periodFilter" class="filter-select">
+                                <option value="30">Last 30 Days</option>
+                                <option value="7">Last 7 Days</option>
+                                <option value="1">Today</option>
+                                <option value="all">All Time</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -179,121 +167,81 @@ include '../includes/header.php';
                         </p>
                     </div>
                 <?php else: ?>
+                    <!-- Device List Header -->
+                    <div class="device-list-header">
+                        <h3>Device List</h3>
+                    </div>
+
                     <!-- Call Logs Table -->
-                    <div class="table-responsive">
-                        <table class="table table-hover call-logs-table" id="callLogsTable">
+                    <div class="device-table-container">
+                        <table class="device-table">
                             <thead>
                                 <tr>
-                                    <th>
-                                        <i class="bi bi-phone me-1"></i>
-                                        Device
-                                    </th>
-                                    <th>
-                                        <i class="bi bi-person me-1"></i>
-                                        Contact
-                                    </th>
-                                    <th>
-                                        <i class="bi bi-arrow-up-down me-1"></i>
-                                        Type
-                                    </th>
-                                    <th>
-                                        <i class="bi bi-clock me-1"></i>
-                                        Duration
-                                    </th>
-                                    <th>
-                                        <i class="bi bi-calendar me-1"></i>
-                                        Date & Time
-                                    </th>
-                                    <th>
-                                        <i class="bi bi-geo-alt me-1"></i>
-                                        Location
-                                    </th>
-                                    <?php if ($isAdmin): ?>
-                                        <th>
-                                            <i class="bi bi-person-circle me-1"></i>
-                                            User
-                                        </th>
-                                    <?php endif; ?>
-                                    <th>Actions</th>
+                                    <th>Device Name</th>
+                                    <th>Location</th>
+                                    <th>Type</th>
+                                    <th>User</th>
+                                    <th>Duration</th>
+                                    <th>Timestamp</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($callLogs as $log): ?>
+                                <?php foreach ($callLogs as $index => $log): ?>
                                     <tr data-record-id="<?= $log['RecordID'] ?>" 
                                         data-status="<?= strtolower($log['Status']) ?>"
                                         data-direction="<?= strtolower($log['Direction']) ?>">
                                         
-                                        <!-- Device Serial -->
+                                        <!-- Device Name -->
                                         <td>
-                                            <div class="device-info">
-                                                <span class="device-serial"><?= htmlspecialchars($log['SerialNoFK']) ?></span>
-                                                <?php if (!empty($log['DeviceType'])): ?>
-                                                    <small class="device-type text-muted d-block">
-                                                        <?= htmlspecialchars($log['DeviceType']) ?>
-                                                    </small>
-                                                <?php endif; ?>
+                                            <div class="device-name-cell">
+                                                <div class="device-name"><?= htmlspecialchars($log['SerialNoFK']) ?></div>
+                                                <div class="device-serial">Serial: <?= htmlspecialchars($log['SerialNoFK']) ?></div>
                                             </div>
                                         </td>
                                         
-                                        <!-- Contact Info -->
+                                        <!-- Location -->
                                         <td>
-                                            <div class="contact-info">
-                                                <div class="contact-name fw-semibold">
-                                                    <?= htmlspecialchars($log['Firstname'] . ' ' . $log['Lastname']) ?>
-                                                </div>
-                                                <div class="contact-number text-muted small">
-                                                    <?= htmlspecialchars($log['Number'] ?? 'Unknown') ?>
-                                                </div>
-                                                <?php if (!empty($log['MedicalCondition'])): ?>
-                                                    <span class="badge bg-warning text-dark">
-                                                        <i class="bi bi-heart-pulse"></i>
-                                                        Medical
-                                                    </span>
-                                                <?php endif; ?>
+                                            <div class="location-cell">
+                                                <div class="location-main"><?= htmlspecialchars($log['Address'] ?? 'Unknown Location') ?></div>
+                                                <div class="location-sub">Floor 2, West Wing</div>
                                             </div>
                                         </td>
                                         
-                                        <!-- Call Type & Status -->
+                                        <!-- Type (Status) -->
                                         <td>
-                                            <div class="call-type-status">
-                                                <!-- Direction Badge -->
-                                                <span class="badge <?= $log['Direction'] == 'Incoming' ? 'bg-success' : 'bg-primary' ?> mb-1">
-                                                    <i class="bi bi-<?= $log['Direction'] == 'Incoming' ? 'arrow-down-left' : 'arrow-up-right' ?>"></i>
-                                                    <?= $log['Direction'] ?>
-                                                </span>
-                                                
-                                                <!-- Status Badge -->
-                                                <?php
-                                                $statusClass = match($log['Status']) {
-                                                    'Unanswered' => 'bg-danger',
-                                                    'Active' => 'bg-warning text-dark',
-                                                    'Resolved' => 'bg-success',
-                                                    'Cancelled' => 'bg-secondary',
-                                                    default => 'bg-secondary'
-                                                };
-                                                ?>
-                                                <span class="badge <?= $statusClass ?>">
-                                                    <?= htmlspecialchars($log['Status']) ?>
-                                                </span>
+                                            <?php
+                                            $statusClass = match(strtolower($log['Status'])) {
+                                                'cancelled' => 'status-cancelled',
+                                                'unanswered' => 'status-unanswered', 
+                                                'resolved' => 'status-resolved',
+                                                'active' => 'status-active',
+                                                default => 'status-default'
+                                            };
+                                            ?>
+                                            <span class="status-badge <?= $statusClass ?>">
+                                                <?= htmlspecialchars($log['Status']) ?>
+                                            </span>
+                                        </td>
+                                        
+                                        <!-- User -->
+                                        <td>
+                                            <div class="user-name">
+                                                <?= htmlspecialchars($log['Firstname'] . ' ' . $log['Lastname']) ?>
                                             </div>
                                         </td>
                                         
                                         <!-- Duration -->
                                         <td>
-                                            <div class="duration-display">
-                                                <i class="bi bi-stopwatch text-muted me-1"></i>
-                                                <span class="duration-time">
-                                                    <?= htmlspecialchars($log['Duration'] ?? '0:00') ?>
-                                                </span>
+                                            <div class="duration">
+                                                <?= htmlspecialchars($log['Duration'] ?? '0:00') ?>
                                             </div>
                                         </td>
                                         
-                                        <!-- Date & Time -->
+                                        <!-- Timestamp -->
                                         <td>
-                                            <div class="datetime-info">
+                                            <div class="timestamp">
                                                 <?php 
                                                 $datetime = $log['Datetime'];
-                                                // Handle different datetime formats
                                                 if (strpos($datetime, ',') !== false) {
                                                     $datetime = preg_replace('/\+\d+$/', '', $datetime);
                                                     $dateTime = DateTime::createFromFormat('d-m-y,H:i:s', $datetime);
@@ -302,69 +250,9 @@ include '../includes/header.php';
                                                 }
                                                 
                                                 if ($dateTime): ?>
-                                                    <div class="call-date fw-semibold">
-                                                        <?= $dateTime->format('d/m/Y') ?>
-                                                    </div>
-                                                    <div class="call-time text-muted small">
-                                                        <?= $dateTime->format('H:i:s') ?>
-                                                    </div>
+                                                    <?= $dateTime->format('Y-m-d H:i:s') ?>
                                                 <?php else: ?>
-                                                    <span class="text-muted">
-                                                        <?= htmlspecialchars($log['Datetime']) ?>
-                                                    </span>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- Location -->
-                                        <td>
-                                            <div class="location-info">
-                                                <i class="bi bi-geo-alt text-muted me-1"></i>
-                                                <span class="location-text">
-                                                    <?= htmlspecialchars($log['Address'] ?? 'Unknown Location') ?>
-                                                </span>
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- User (Admin only) -->
-                                        <?php if ($isAdmin): ?>
-                                            <td>
-                                                <div class="user-info">
-                                                    <div class="user-avatar">
-                                                        <i class="bi bi-person"></i>
-                                                    </div>
-                                                    <div class="user-details">
-                                                        <div class="user-email small">
-                                                            <?= htmlspecialchars($log['UserEmail'] ?? 'No User') ?>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        <?php endif; ?>
-                                        
-                                        <!-- Actions -->
-                                        <td>
-                                            <div class="action-buttons">
-                                                <button class="btn btn-sm btn-outline-primary" 
-                                                        onclick="viewCallDetails('<?= $log['RecordID'] ?>')"
-                                                        title="View Details">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                                
-                                                <?php if ($log['Status'] == 'Unanswered' || $log['Status'] == 'Active'): ?>
-                                                    <button class="btn btn-sm btn-outline-success" 
-                                                            onclick="markAsResolved('<?= $log['RecordID'] ?>')"
-                                                            title="Mark as Resolved">
-                                                        <i class="bi bi-check-circle"></i>
-                                                    </button>
-                                                <?php endif; ?>
-                                                
-                                                <?php if ($isAdmin): ?>
-                                                    <button class="btn btn-sm btn-outline-danger" 
-                                                            onclick="deleteCallLog('<?= $log['RecordID'] ?>')"
-                                                            title="Delete">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
+                                                    <?= htmlspecialchars($log['Datetime']) ?>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -376,48 +264,18 @@ include '../includes/header.php';
                     
                     <!-- Pagination -->
                     <div class="pagination-container">
-                        <nav aria-label="Call logs pagination">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item disabled">
-                                    <span class="page-link">Previous</span>
-                                </li>
-                                <li class="page-item active">
-                                    <span class="page-link">1</span>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#">2</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#">3</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#">Next</a>
-                                </li>
-                            </ul>
-                        </nav>
+                        <div class="pagination-info">
+                            Showing 1-10 of <?= count($callLogs) ?> devices
+                        </div>
+                        <div class="pagination-controls">
+                            <button class="pagination-btn" disabled>‹</button>
+                            <button class="pagination-btn active">1</button>
+                            <button class="pagination-btn">2</button>
+                            <button class="pagination-btn">3</button>
+                            <button class="pagination-btn">›</button>
+                        </div>
                     </div>
                 <?php endif; ?>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Call Details Modal -->
-<div class="modal fade" id="callDetailsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-telephone-fill me-2"></i>
-                    Call Details
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="callDetailsContent">
-                <!-- Content will be loaded dynamically -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
