@@ -74,7 +74,7 @@
     left: 0;
     right: 0;
     height: 300px; /* Adjust height as needed */
-    background-image: url('/assets/images/top-bg.png');
+    /* background-image: url('/assets/images/top-bg.png'); */
     background-repeat: no-repeat;
     background-position: top center;
     background-size: cover; /* or contain, depending on your preference */

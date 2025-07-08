@@ -22,14 +22,11 @@
                     <span>Dashboard</span>
                 </a>
                 
-                <a href="../pages/devices.php" class="nav-item <?php echo ($currentPage ?? '') == 'devices' ? 'active' : ''; ?>">
-                    <i class="bi bi-phone"></i>
-                    <span>Devices</span>
-                </a>
+          
                 
-                <a href="../pages/family_members.php" class="nav-item <?php echo ($currentPage ?? '') == 'family_members' ? 'active' : ''; ?>">
+                <a href="../pages/dependents.php" class="nav-item <?php echo ($currentPage ?? '') == 'family_members' ? 'active' : ''; ?>">
                     <i class="bi bi-people"></i>
-                    <span>Family Members</span>
+                    <span>Dependents</span>
                 </a>
                 
                 <a href="../pages/call_logs.php" class="nav-item <?php echo ($currentPage ?? '') == 'call_logs' ? 'active' : ''; ?>">
