@@ -39,15 +39,15 @@
                     <span>Alert History</span>
                 </a>
                 
-                <a href="../pages/settings.php" class="nav-item <?php echo ($currentPage ?? '') == 'settings' ? 'active' : ''; ?>">
+                <!-- <a href="../pages/settings.php" class="nav-item <?php echo ($currentPage ?? '') == 'settings' ? 'active' : ''; ?>">
                     <i class="bi bi-gear"></i>
                     <span>Settings</span>
-                </a>
+                </a> -->
                 
-                <a href="../pages/profile.php" class="nav-item <?php echo ($currentPage ?? '') == 'profile' ? 'active' : ''; ?>">
+                <!-- <a href="../pages/profile.php" class="nav-item <?php echo ($currentPage ?? '') == 'profile' ? 'active' : ''; ?>">
                     <i class="bi bi-person"></i>
                     <span>Profile</span>
-                </a>
+                </a> -->
                 
                 <a href="../pages/system_activities.php" class="nav-item <?php echo ($currentPage ?? '') == 'system_activities' ? 'active' : ''; ?>">
                     <i class="bi bi-activity"></i>

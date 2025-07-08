@@ -55,16 +55,9 @@
                 </div>
             </div>
 
-            <!-- Right Section - Search & User -->
+            <!-- Right Section - User -->
             <div class="topbar-actions">
-                <!-- Search Container -->
-                <div class="search-container d-none d-lg-block">
-                    <div class="search-wrapper">
-                        <input type="text" placeholder="Search..." class="search-input">
-                        <i class="bi bi-search search-icon"></i>
-                    </div>
-                </div>
-
+                
                 <!-- Notifications -->
                 <div class="notification-dropdown">
                     <button class="notification-btn" onclick="toggleNotifications()">
@@ -116,9 +109,9 @@
                         <a href="../pages/profile.php" class="user-menu-item">
                             <i class="bi bi-person"></i> Profile
                         </a>
-                        <a href="../pages/settings.php" class="user-menu-item">
+                        <!-- <a href="../pages/settings.php" class="user-menu-item">
                             <i class="bi bi-gear"></i> Settings
-                        </a>
+                        </a> -->
                         <div class="user-menu-divider"></div>
                         <a href="../actions/auth/logout.php" class="user-menu-item logout">
                             <i class="bi bi-box-arrow-right"></i> Logout
@@ -262,44 +255,11 @@
     gap: 15px;
 }
 
-/* Search Container */
-.search-container {
-    position: relative;
-}
 
-.search-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
 
-.search-input {
-    padding: 10px 40px 10px 16px;
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    border-radius: 10px;
-    font-size: 14px;
-    width: 250px;
-    transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-}
 
-.search-input:focus {
-    outline: none;
-    border-color: #4285f4;
-    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
-    background: rgba(255, 255, 255, 1);
-}
 
-.search-icon {
-    position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #a0aec0;
-    font-size: 16px;
-    pointer-events: none;
-}
+
 
 /* Notification Styles */
 .notification-dropdown {
@@ -598,9 +558,7 @@
         right: -10px;
     }
 
-    .search-input {
-        width: 200px;
-    }
+    
 }
 
 @media (max-width: 576px) {
@@ -614,9 +572,7 @@
         align-self: flex-end;
     }
 
-    .search-input {
-        width: 150px;
-    }
+    
 }
 </style>
 

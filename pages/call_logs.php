@@ -194,8 +194,8 @@ include '../includes/header.php';
                                         <!-- Device Name -->
                                         <td>
                                             <div class="device-name-cell">
-                                                <div class="device-name"><?= htmlspecialchars($log['SerialNoFK']) ?></div>
-                                                <div class="device-serial">Serial: <?= htmlspecialchars($log['SerialNoFK']) ?></div>
+                                                <!-- <div class="device-name"><?= htmlspecialchars($log['SerialNoFK']) ?></div> -->
+                                                <div class="device-name">Serial: <?= htmlspecialchars($log['SerialNoFK']) ?></div>
                                             </div>
                                         </td>
                                         

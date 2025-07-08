@@ -2,7 +2,7 @@
 
 /* Statistics Cards Container */
 .stats-grid {
-    margin-top: 170px;
+    margin-top: 10px;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;

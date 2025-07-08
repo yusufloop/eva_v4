@@ -211,9 +211,9 @@ include '../includes/header.php';
                                         
                                         <!-- Status -->
                                         <td>
-                                            <span class="status-badge status-<?= $device['status'] ?>">
+                                            <span class="status-badge status-<?= $device['DeviceStatus'] ?>">
                                                 <i class="bi bi-circle-fill me-1"></i>
-                                                <?= ucfirst($device['status']) ?>
+                                                <?= ucfirst($device['DeviceStatus']) ?>
                                             </span>
                                         </td>
                                         
@@ -741,12 +741,12 @@ include '../includes/header.php';
     text-transform: capitalize;
 }
 
-.status-online {
+.status-Active {
     background: #dcfce7;
     color: #16a34a;
 }
 
-.status-offline {
+.status-Inactive {
     background: #fee2e2;
     color: #dc2626;
 }
