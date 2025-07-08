@@ -1,0 +1,383 @@
+/* Call Logs Specific Styles */
+
+/* Card Header */
+.card-header {
+    background: linear-gradient(135deg, rgba(66, 133, 244, 0.05), rgba(25, 118, 210, 0.02));
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    padding: 20px 25px;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Search Container */
+.search-container {
+    position: relative;
+    min-width: 250px;
+}
+
+.search-container .form-control {
+    padding-right: 40px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.search-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a0aec0;
+    pointer-events: none;
+}
+
+/* Filter Controls */
+.header-actions .form-control {
+    min-width: 150px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    font-size: 14px;
+}
+
+/* Call Logs Table */
+.call-logs-table {
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+.call-logs-table thead {
+    background: linear-gradient(135deg, #4285f4, #1976d2);
+    color: white;
+}
+
+.call-logs-table thead th {
+    border: none;
+    padding: 16px 12px;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.call-logs-table tbody td {
+    padding: 16px 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.call-logs-table tbody tr:hover {
+    background: rgba(66, 133, 244, 0.02);
+}
+
+/* Device Info */
+.device-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.device-serial {
+    font-weight: 600;
+    color: #2d3748;
+    font-family: 'Courier New', monospace;
+}
+
+.device-type {
+    font-size: 11px;
+    color: #718096;
+}
+
+/* Contact Info */
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.contact-name {
+    color: #2d3748;
+    font-size: 14px;
+}
+
+.contact-number {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+/* Call Type & Status */
+.call-type-status {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+}
+
+.call-type-status .badge {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Duration Display */
+.duration-display {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Courier New', monospace;
+    font-weight: 500;
+}
+
+/* DateTime Info */
+.datetime-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.call-date {
+    color: #2d3748;
+    font-size: 14px;
+}
+
+.call-time {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+/* Location Info */
+.location-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 200px;
+}
+
+.location-text {
+    color: #4a5568;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* User Info (Admin) */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #4285f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-email {
+    color: #4a5568;
+    font-size: 12px;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.action-buttons .btn {
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+/* Status-based Row Styling */
+tr[data-status="unanswered"] {
+    border-left: 4px solid #dc3545;
+    background: rgba(220, 53, 69, 0.02);
+}
+
+tr[data-status="active"] {
+    border-left: 4px solid #ffc107;
+    background: rgba(255, 193, 7, 0.02);
+}
+
+tr[data-status="resolved"] {
+    border-left: 4px solid #28a745;
+    background: rgba(40, 167, 69, 0.02);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #718096;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #e2e8f0;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    color: #4a5568;
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Pagination */
+.pagination-container {
+    padding: 20px 0;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .header-actions {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .search-container {
+        min-width: 200px;
+    }
+    
+    .header-actions .form-control {
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+    }
+    
+    .header-actions {
+        justify-content: stretch;
+        flex-direction: column;
+    }
+    
+    .search-container,
+    .header-actions .form-control {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    /* Mobile Table Responsiveness */
+    .call-logs-table {
+        font-size: 12px;
+    }
+    
+    .call-logs-table thead {
+        display: none;
+    }
+    
+    .call-logs-table tbody tr {
+        display: block;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        padding: 16px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .call-logs-table tbody td {
+        display: block;
+        border: none;
+        padding: 8px 0;
+        position: relative;
+        padding-left: 35%;
+    }
+    
+    .call-logs-table tbody td:before {
+        content: attr(data-label) ": ";
+        position: absolute;
+        left: 0;
+        width: 30%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 11px;
+    }
+    
+    .action-buttons {
+        justify-content: flex-end;
+        margin-top: 12px;
+    }
+}
+
+/* Loading States */
+.loading-row {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .header-actions,
+    .action-buttons,
+    .pagination-container {
+        display: none !important;
+    }
+    
+    .call-logs-table {
+        font-size: 10px;
+    }
+    
+    .call-logs-table thead {
+        background: #f8f9fa !important;
+        color: #000 !important;
+    }
+}
