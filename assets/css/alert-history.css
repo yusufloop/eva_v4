@@ -1,0 +1,450 @@
+/* Alert History Specific Styles */
+
+/* Card Header */
+.card-header {
+    background: #ffffff;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 20px 24px;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.alert-history-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #4285f4, #1976d2);
+    border-radius: 8px;
+    color: white;
+    font-size: 18px;
+}
+
+.header-text h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.header-text p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    position: relative;
+}
+
+.filter-select {
+    padding: 8px 32px 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: white;
+    font-size: 14px;
+    color: #333;
+    min-width: 120px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #4285f4;
+    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+/* Alert Table */
+.alert-table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #f0f0f0;
+}
+
+.alert-table {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 14px;
+}
+
+.alert-table thead th {
+    background: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    padding: 16px 12px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.alert-table tbody td {
+    padding: 16px 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.alert-table tbody tr:hover {
+    background: rgba(66, 133, 244, 0.02);
+}
+
+.alert-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.alert-row {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Table Cell Styles */
+.alert-id {
+    font-weight: 600;
+    color: #4285f4;
+    font-family: 'Courier New', monospace;
+}
+
+.datetime-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.datetime-cell .date {
+    font-weight: 500;
+    color: #1a1a1a;
+    font-size: 14px;
+}
+
+.datetime-cell .time {
+    font-size: 12px;
+    color: #666;
+    font-family: 'Courier New', monospace;
+}
+
+.device-cell {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+.device-id {
+    color: #1a1a1a;
+}
+
+.location-cell {
+    display: flex;
+    align-items: center;
+    color: #1a1a1a;
+}
+
+.resolved-by-cell {
+    display: flex;
+    align-items: center;
+    color: #1a1a1a;
+}
+
+/* Alert Type Badges */
+.alert-type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.alert-type-emergency {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.alert-type-device {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.alert-type-system {
+    background: #f3e8ff;
+    color: #7c3aed;
+}
+
+.alert-type-default {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.status-resolved {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.status-pending {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.status-active {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.status-default {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+/* Priority Badges */
+.priority-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.priority-high {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.priority-medium {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.priority-low {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.priority-default {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+/* Pagination */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    margin-top: 16px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.pagination-info {
+    font-size: 14px;
+    color: #666;
+}
+
+.pagination .page-link {
+    color: #4285f4;
+    border-color: #e0e0e0;
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+.pagination .page-link:hover {
+    background-color: #f8f9fa;
+    border-color: #d0d0d0;
+    color: #1976d2;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #4285f4;
+    border-color: #4285f4;
+    color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #fff;
+    border-color: #dee2e6;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #718096;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #e2e8f0;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    color: #4a5568;
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .header-actions {
+        gap: 8px;
+    }
+    
+    .filter-select {
+        min-width: 100px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 992px) {
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+    
+    .header-actions {
+        justify-content: stretch;
+        flex-wrap: wrap;
+    }
+    
+    .filter-select {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .card-header {
+        padding: 16px;
+    }
+    
+    .header-left {
+        gap: 8px;
+    }
+    
+    .alert-history-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+    
+    .header-text h2 {
+        font-size: 16px;
+    }
+    
+    .header-text p {
+        font-size: 12px;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .filter-select {
+        width: 100%;
+    }
+    
+    /* Mobile Table */
+    .alert-table-container {
+        overflow-x: auto;
+    }
+    
+    .alert-table {
+        min-width: 800px;
+    }
+    
+    .alert-table thead th,
+    .alert-table tbody td {
+        padding: 12px 8px;
+        font-size: 12px;
+    }
+    
+    .pagination-container {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+    
+    .pagination {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .alert-table {
+        min-width: 600px;
+    }
+    
+    .alert-type-badge,
+    .status-badge,
+    .priority-badge {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+    
+    .datetime-cell .date,
+    .datetime-cell .time {
+        font-size: 11px;
+    }
+}
+
+/* Animation for row interactions */
+@keyframes highlightRow {
+    0% { background-color: rgba(66, 133, 244, 0.1); }
+    100% { background-color: transparent; }
+}
+
+.alert-row.highlighted {
+    animation: highlightRow 1s ease-out;
+}
