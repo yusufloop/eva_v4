@@ -17,13 +17,11 @@ $isAdmin = hasRole('admin');
 // Page-specific assets
 $additionalCSS = [
     '../assets/css/dashboard.css',
-    '../assets/css/components/stats-card.css',
-    '../assets/css/alert-history.css'
+    '../assets/css/components/stats-card.css'
 ];
 
 $additionalJS = [
-    '../assets/js/dashboard.js',
-    '../assets/js/alert-history.js'
+    '../assets/js/dashboard.js'
 ];
 
 // Breadcrumb configuration
@@ -32,37 +30,17 @@ $breadcrumbs = [
     ['title' => 'Alert History', 'url' => '#']
 ];
 
-// Static alert data (since database is unavailable)
-$alertData = [
+// Static alert data - Simple timeline format
+$alerts = [
     [
-        'id' => 1,
-        'datetime' => '2024-01-15 14:30:25',
-        'deviceId' => 'EVA-001',
-        'alertType' => 'Emergency',
-        'location' => 'Room 156A',
-        'status' => 'Resolved',
-        'resolvedBy' => 'Maria Santos',
-        'priority' => 'High',
-        'description' => 'Emergency call from Maria Santos'
+        'time' => '2:34 PM',
+        'event' => 'Emergency resolved in Room 156A by Maria Santos'
     ],
     [
-        'id' => 2,
-        'datetime' => '2024-01-15 10:15:42',
-        'deviceId' => 'EVA-002',
-        'alertType' => 'Low Battery',
-        'location' => 'Room 220B',
-        'status' => 'Pending',
-        'resolvedBy' => '-',
-        'priority' => 'Medium',
-        'description' => 'Device battery level below 20%'
+        'time' => '1:22 PM', 
+        'event' => 'Emergency resolved in Room 159A by Akmal'
     ]
 ];
-
-// Calculate stats from static data
-$totalAlerts = count($alertData);
-$resolvedAlerts = count(array_filter($alertData, fn($alert) => $alert['status'] === 'Resolved'));
-$pendingAlerts = count(array_filter($alertData, fn($alert) => $alert['status'] === 'Pending'));
-$highPriorityAlerts = count(array_filter($alertData, fn($alert) => $alert['priority'] === 'High'));
 
 // Include header
 include '../includes/header.php';
@@ -77,312 +55,230 @@ include '../includes/header.php';
     <!-- Main Content -->
     <div class="main-content">
         
-        <!-- Statistics Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon total">
-                    <i class="bi bi-exclamation-triangle"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">
-                        <span class="status-text">Total Alerts</span>
-                        <span class="total-text">All Time</span>
-                    </div>
-                    <div class="stat-number total">
-                        <?= $totalAlerts ?>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon online">
-                    <i class="bi bi-check-circle"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">
-                        <span class="status-text">Resolved</span>
-                        <span class="total-text">Completed</span>
-                    </div>
-                    <div class="stat-number online">
-                        <?= $resolvedAlerts ?>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon offline">
-                    <i class="bi bi-clock"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">
-                        <span class="status-text">Pending</span>
-                        <span class="total-text">Awaiting Action</span>
-                    </div>
-                    <div class="stat-number offline">
-                        <?= $pendingAlerts ?>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon emergency">
-                    <i class="bi bi-exclamation-circle"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-label">
-                        <span class="status-text">High Priority</span>
-                        <span class="total-text">Critical</span>
-                    </div>
-                    <div class="stat-number emergency">
-                        <?= $highPriorityAlerts ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Alert History Panel -->
-        <div class="eva-card">
-            <div class="card-header">
-                <div class="header-content">
-                    <div class="header-left">
-                        <div class="alert-history-icon">
-                            <i class="bi bi-exclamation-triangle-fill"></i>
+        <!-- Alert Activities Card -->
+        <div class="container mt-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex align-items-center">
+                        <div class="alert-icon me-3">
+                            <i class="bi bi-exclamation-triangle-fill text-primary"></i>
                         </div>
-                        <div class="header-text">
-                            <h2>Alert History</h2>
-                            <p>System alert activities and notifications</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Filter Controls -->
-                    <div class="header-actions">
-                        <div class="filter-group">
-                            <select id="alertTypeFilter" class="filter-select">
-                                <option value="">All Types</option>
-                                <option value="emergency">Emergency</option>
-                                <option value="device">Device</option>
-                                <option value="system">System</option>
-                                <option value="low battery">Low Battery</option>
-                            </select>
-                        </div>
-                        
-                        <div class="filter-group">
-                            <select id="statusFilter" class="filter-select">
-                                <option value="">All Status</option>
-                                <option value="resolved">Resolved</option>
-                                <option value="pending">Pending</option>
-                                <option value="active">Active</option>
-                            </select>
-                        </div>
-                        
-                        <div class="filter-group">
-                            <select id="priorityFilter" class="filter-select">
-                                <option value="">All Priority</option>
-                                <option value="high">High</option>
-                                <option value="medium">Medium</option>
-                                <option value="low">Low</option>
-                            </select>
+                        <div>
+                            <h4 class="mb-0 text-dark fw-bold">Alert Activities</h4>
+                            <small class="text-muted">ALERT HISTORY</small>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="card-body">
-                <?php if (empty($alertData)): ?>
-                    <!-- Empty State -->
-                    <div class="empty-state">
-                        <i class="bi bi-bell-slash display-1 text-muted"></i>
-                        <h3 class="mt-3">No Alerts Found</h3>
-                        <p class="text-muted">
-                            <?= $isAdmin ? 'No alert history records are available in the system.' : 'You don\'t have any alert history yet.' ?>
-                        </p>
-                    </div>
-                <?php else: ?>
-                    <!-- Alert History Table -->
-                    <div class="alert-table-container">
-                        <table class="alert-table table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th scope="col">
-                                        <i class="bi bi-hash me-2"></i>ID
-                                    </th>
-                                    <th scope="col">
-                                        <i class="bi bi-calendar me-2"></i>DateTime
-                                    </th>
-                                    <th scope="col">
-                                        <i class="bi bi-phone me-2"></i>Device ID
-                                    </th>
-                                    <th scope="col">
-                                        <i class="bi bi-exclamation-triangle me-2"></i>Alert Type
-                                    </th>
-                                    <th scope="col">
-                                        <i class="bi bi-geo-alt me-2"></i>Location
-                                    </th>
-                                    <th scope="col">
-                                        <i class="bi bi-check-circle me-2"></i>Status
-                                    </th>
-                                    <th scope="col">
-                                        <i class="bi bi-person me-2"></i>Resolved By
-                                    </th>
-                                    <th scope="col">
-                                        <i class="bi bi-flag me-2"></i>Priority
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($alertData as $alert): ?>
-                                    <tr data-alert-id="<?= $alert['id'] ?>" 
-                                        data-type="<?= strtolower($alert['alertType']) ?>"
-                                        data-status="<?= strtolower($alert['status']) ?>"
-                                        data-priority="<?= strtolower($alert['priority']) ?>"
-                                        class="alert-row">
-                                        
-                                        <!-- ID -->
-                                        <td>
-                                            <span class="alert-id">#<?= str_pad($alert['id'], 3, '0', STR_PAD_LEFT) ?></span>
-                                        </td>
-                                        
-                                        <!-- DateTime -->
-                                        <td>
-                                            <div class="datetime-cell">
-                                                <div class="date"><?= date('d/m/Y', strtotime($alert['datetime'])) ?></div>
-                                                <div class="time"><?= date('H:i:s', strtotime($alert['datetime'])) ?></div>
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- Device ID -->
-                                        <td>
-                                            <div class="device-cell">
-                                                <i class="bi bi-phone me-2 text-primary"></i>
-                                                <span class="device-id"><?= htmlspecialchars($alert['deviceId']) ?></span>
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- Alert Type -->
-                                        <td>
-                                            <?php
-                                            $typeClass = match(strtolower($alert['alertType'])) {
-                                                'emergency' => 'alert-type-emergency',
-                                                'low battery' => 'alert-type-device',
-                                                'device' => 'alert-type-device',
-                                                'system' => 'alert-type-system',
-                                                default => 'alert-type-default'
-                                            };
-                                            
-                                            $typeIcon = match(strtolower($alert['alertType'])) {
-                                                'emergency' => 'bi-exclamation-triangle-fill',
-                                                'low battery' => 'bi-battery-half',
-                                                'device' => 'bi-phone',
-                                                'system' => 'bi-gear',
-                                                default => 'bi-bell'
-                                            };
-                                            ?>
-                                            <span class="alert-type-badge <?= $typeClass ?>">
-                                                <i class="<?= $typeIcon ?> me-1"></i>
-                                                <?= htmlspecialchars($alert['alertType']) ?>
-                                            </span>
-                                        </td>
-                                        
-                                        <!-- Location -->
-                                        <td>
-                                            <div class="location-cell">
-                                                <i class="bi bi-geo-alt me-2 text-muted"></i>
-                                                <?= htmlspecialchars($alert['location']) ?>
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- Status -->
-                                        <td>
-                                            <?php
-                                            $statusClass = match(strtolower($alert['status'])) {
-                                                'resolved' => 'status-resolved',
-                                                'pending' => 'status-pending',
-                                                'active' => 'status-active',
-                                                default => 'status-default'
-                                            };
-                                            
-                                            $statusIcon = match(strtolower($alert['status'])) {
-                                                'resolved' => 'bi-check-circle-fill',
-                                                'pending' => 'bi-clock-fill',
-                                                'active' => 'bi-play-circle-fill',
-                                                default => 'bi-circle'
-                                            };
-                                            ?>
-                                            <span class="status-badge <?= $statusClass ?>">
-                                                <i class="<?= $statusIcon ?> me-1"></i>
-                                                <?= htmlspecialchars($alert['status']) ?>
-                                            </span>
-                                        </td>
-                                        
-                                        <!-- Resolved By -->
-                                        <td>
-                                            <div class="resolved-by-cell">
-                                                <?php if ($alert['resolvedBy'] !== '-'): ?>
-                                                    <i class="bi bi-person-check me-2 text-success"></i>
-                                                    <?= htmlspecialchars($alert['resolvedBy']) ?>
-                                                <?php else: ?>
-                                                    <span class="text-muted">-</span>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- Priority -->
-                                        <td>
-                                            <?php
-                                            $priorityClass = match(strtolower($alert['priority'])) {
-                                                'high' => 'priority-high',
-                                                'medium' => 'priority-medium',
-                                                'low' => 'priority-low',
-                                                default => 'priority-default'
-                                            };
-                                            
-                                            $priorityIcon = match(strtolower($alert['priority'])) {
-                                                'high' => 'bi-exclamation-circle-fill',
-                                                'medium' => 'bi-dash-circle-fill',
-                                                'low' => 'bi-info-circle-fill',
-                                                default => 'bi-circle'
-                                            };
-                                            ?>
-                                            <span class="priority-badge <?= $priorityClass ?>">
-                                                <i class="<?= $priorityIcon ?> me-1"></i>
-                                                <?= htmlspecialchars($alert['priority']) ?>
-                                            </span>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    <div class="pagination-container">
-                        <div class="pagination-info">
-                            Showing 1-<?= count($alertData) ?> of <?= count($alertData) ?> alerts
+                
+                <div class="card-body">
+                    <?php if (empty($alerts)): ?>
+                        <!-- Empty State -->
+                        <div class="text-center py-5">
+                            <i class="bi bi-bell-slash display-1 text-muted"></i>
+                            <h3 class="mt-3 text-muted">No Alert Activities</h3>
+                            <p class="text-muted">No recent alert activities to display.</p>
                         </div>
-                        <nav aria-label="Alert pagination">
-                            <ul class="pagination pagination-sm mb-0">
-                                <li class="page-item disabled">
-                                    <span class="page-link">‹</span>
-                                </li>
-                                <li class="page-item active">
-                                    <span class="page-link">1</span>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#">2</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#">3</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="#">›</a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                <?php endif; ?>
+                    <?php else: ?>
+                        <!-- Alert Timeline -->
+                        <div class="alert-timeline">
+                            <?php foreach ($alerts as $index => $alert): ?>
+                                <div class="alert-item <?= $index === count($alerts) - 1 ? 'last-item' : '' ?>">
+                                    <div class="time-marker">
+                                        <i class="bi bi-clock me-2"></i>
+                                        <?= htmlspecialchars($alert['time']) ?>
+                                    </div>
+                                    <div class="event-text">
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        <?= htmlspecialchars($alert['event']) ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* Alert Activities Specific Styles */
+.alert-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(66, 133, 244, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 20px 24px;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px);
+}
+
+.card-body {
+    padding: 30px 24px;
+}
+
+/* Alert Timeline */
+.alert-timeline {
+    border-left: 3px solid #4285f4;
+    padding-left: 20px;
+    position: relative;
+}
+
+.alert-item {
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+    position: relative;
+}
+
+.alert-item.last-item {
+    border-bottom: none;
+}
+
+.alert-item::before {
+    content: '';
+    position: absolute;
+    left: -26px;
+    top: 20px;
+    width: 8px;
+    height: 8px;
+    background: #4285f4;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px #4285f4;
+}
+
+.time-marker {
+    font-weight: 600;
+    color: #4285f4;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.event-text {
+    color: #6c757d;
+    margin-top: 5px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    .card-header {
+        padding: 16px 20px;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    .alert-timeline {
+        padding-left: 16px;
+    }
+    
+    .alert-item::before {
+        left: -22px;
+    }
+    
+    .alert-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+    
+    .card-header h4 {
+        font-size: 1.1rem;
+    }
+    
+    .time-marker {
+        font-size: 0.85rem;
+    }
+    
+    .event-text {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-header .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 10px;
+    }
+    
+    .alert-timeline {
+        padding-left: 12px;
+    }
+    
+    .alert-item::before {
+        left: -18px;
+        width: 6px;
+        height: 6px;
+    }
+}
+
+/* Animation for timeline items */
+.alert-item {
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: slideInLeft 0.5s ease-out forwards;
+}
+
+.alert-item:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.alert-item:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.alert-item:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes slideInLeft {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Hover effects */
+.alert-item:hover {
+    background: rgba(66, 133, 244, 0.02);
+    border-radius: 8px;
+    margin: 0 -10px;
+    padding: 15px 10px;
+    transition: all 0.3s ease;
+}
+
+.alert-item:hover .time-marker {
+    color: #1976d2;
+}
+
+.alert-item:hover .event-text {
+    color: #495057;
+}
+</style>
 
 <?php include '../includes/footer.php'; ?>
