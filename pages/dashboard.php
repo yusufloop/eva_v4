@@ -1,370 +1,1186 @@
 <?php
+// Page configuration
+$pageTitle = 'Dashboard';
+$currentPage = 'dashboard';
 
+// Include dependencies
+require_once '../config/config.php';
+require_once '../helpers/auth_helper.php';
+require_once '../helpers/device_helpers.php';
 
-require '../helpers/device_helpers.php';
-// require_once './actions/user_functions.php';
-require '../actions/dashboard_functions.php';
-require '../helpers/component_helper.php'; 
+// Check authentication
+requireAuth();
 
+// Get current user info
+$userId = getCurrentUserId();
+$isAdmin = hasRole('admin');
 
-ob_start();
+// Page-specific assets
+$additionalCSS = [
+    '../assets/css/dashboard.css',
+    '../assets/css/components/stats-card.css'
+];
 
-// Page assets
-$additionalCSS = ['../assets/css/dashboard.css','../assets/css/components/stats-card.css','../assets/css/components/panel.css',];
-$additionalJS = ['../assets/js/dashboard.js', ];
+$additionalJS = [
+    '../assets/js/dashboard.js'
+];
 
-include '../includes/header.php'; 
+// Breadcrumb configuration
+$breadcrumbs = [
+    ['title' => 'Dashboard', 'url' => '#']
+];
 
-
-// Role-based page configuration
-if (hasRole('admin')):
-    $pageTitle = hasRole('admin') ? 'Admin Dashboard' : 'My Dashboard';
-    $dashboardData = getAdminDashboardData();
-    $recentActivities = getRecentSystemActivities(10);
+// Get dashboard data based on user role
+if ($isAdmin) {
     $devices = getAllDevicesWithStatus();
-   
-elseif (hasRole('user')):
-    $pageTitle = 'My Dashboard';
-    $dashboardData = getUserDashboardData($userId);
-    $recentActivities = getUserRecentActivities($userId, 5);
+    $users = getAllUsers();
+    $dependents = getAllDependents();
+    $stats = getDeviceStatistics();
+} else {
     $devices = getUserDevicesWithStatus($userId);
-endif;
+    $users = [];
+    $dependents = getUserDependents($userId);
+    $stats = getUserDeviceStatistics($userId);
+}
+
+// Include header
+include '../includes/header.php';
 ?>
-
-
 
 <?php include '../includes/topbar.php'; ?>
+
 <div class="dashboard-layout">
-    <!-- Sidebar Navigation -->
-    <?php  include '../includes/sidebar.php'; ?>
+    <!-- Sidebar -->
+    <?php include '../includes/sidebar.php'; ?>
     
-<!-- Main Content -->
+    <!-- Main Content -->
     <div class="main-content">
-         <?php  include '../includes/topbar.php'; ?>
-
-        <!-- Alert Messages -->
-        <?php # displayAlerts(); ?>
-
-       <div class="stats-grid">
-    <?= $templates->render('stats-card', [
-        'type' => 'online',
-        'icon' => 'fas fa-wifi',
-        'title' => 'Online',
-        'subtitle' => hasRole('admin') ? $dashboardData['total_devices'] . ' Total' : 'Active',
-        'value' => $dashboardData['online_devices']
-    ]) ?>
-    
-    <?= $templates->render('stats-card', [
-        'type' => 'offline',
-        'icon' => 'fas fa-wifi-slash',
-        'title' => 'Offline',
-        'subtitle' => hasRole('admin') ? 'Devices' : 'Inactive',
-        'value' => $dashboardData['offline_devices']
-    ]) ?>
-    
-    <?= $templates->render('stats-card', [
-        'type' => 'total',
-        'icon' => 'fas fa-mobile-alt',
-        'title' => 'Total Devices',
-        'subtitle' => hasRole('admin') ? 'System Wide' : 'Registered',
-        'value' => $dashboardData['total_devices']
-    ]) ?>
-    
-    <?= $templates->render('stats-card', [
-        'type' => 'emergency',
-        'icon' => 'fas fa-exclamation-triangle',
-        'title' => 'Active Emergencies',
-        'subtitle' => 'Requiring Attention',
-        'value' => $dashboardData['active_emergencies']
-    ]) ?>
-</div>
-
-<?php ob_start(); ?>
-        <div class="search-container">
-            <input type="text" id="deviceSearchBar" placeholder="Search devices..." class="search-input">
-            <i class="fas fa-search search-icon"></i>
-        </div>
-        <div class="filter-dropdown">
-            <select id="statusFilter" class="filter-select">
-                <option value="">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-            </select>
-        </div>
-        <?php if (hasRole('admin')): ?>
-            <button class="btn btn-sm btn-outline" onclick="openBulkActions()">
-                <i class="fas fa-cog"></i> Bulk Actions
-            </button>
-            <button class="btn btn-primary" onclick="openAddDeviceModal()">
-                <i class="fas fa-plus"></i> Add Device
-            </button>
-            <button class="btn btn-secondary" onclick="openAddUserModal()">
-                <i class="fas fa-user-plus"></i> Add User
-            </button>
-        <?php endif; ?>
-<?php $devicesHeaderActions = ob_get_clean(); ?>
-
-<?php ob_start(); ?>
-
-<?php if (empty($devices)): ?>
-    <div class="empty-state">
-        <i class="fas fa-mobile-alt"></i>
-        <h3>No Devices Found</h3>
-        <p>
-            <?php if (hasRole('admin')): ?>
-                No devices are currently registered in the system.
-            <?php else: ?>
-                You haven't registered any devices yet.
-            <?php endif; ?>
-        </p>
-        <button class="btn btn-primary" onclick="openAddDeviceModal()">
-            <i class="fas fa-plus"></i> 
-            <?= hasRole('admin') ? 'Add Device' : 'Register Device' ?>
-        </button>
-    </div>
-<?php else: ?>
-    <div class="device-list">
-        <?php foreach ($devices as $device): ?>
-            <div class="device-item" data-status="<?= $device['DeviceStatus'] ?>">
-                <div class="device-info">
-                    <div class="device-header">
-                        <span class="device-serial"><?= htmlspecialchars($device['SerialNo']) ?></span>
-                        <span class="device-status status-<?= $device['DeviceStatus'] ?>">
-                            <i class="fas fa-circle"></i>
-                            <?= ucfirst($device['DeviceStatus']) ?>
-                        </span>
-                    </div>
-                    <div class="device-details">
-                        <div class="device-location">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <?= htmlspecialchars($device['Address'] ?? 'No Location') ?>
-                        </div>
-                        <?php if (hasRole('admin')): ?>
-                            <div class="device-user">
-                                <i class="fas fa-user"></i>
-                                <?= htmlspecialchars($device['Email']) ?>
-                            </div>
-                        <?php endif; ?>
-                        <div class="device-dependent">
-                            <i class="fas fa-users"></i>
-                            <?= htmlspecialchars($device['Firstname'] . ' ' . $device['Lastname']) ?>
-                        </div>
-                    </div>
+        
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon online">
+                    <i class="bi bi-wifi"></i>
                 </div>
-                <div class="device-actions">
-                    <button class="btn-icon" onclick="viewDevice('<?= $device['SerialNo'] ?>')" title="View Details">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn-icon" onclick="editDevice('<?= $device['SerialNo'] ?>')" title="Edit">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <?php if (hasRole('admin') || $device['user_id'] == $userId): ?>
-                        <button class="btn-icon btn-danger" onclick="deleteDevice('<?= $device['SerialNo'] ?>')" title="Delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    <?php endif; ?>
+                <div class="stat-content">
+                    <div class="stat-label">
+                        <span class="status-text">Online</span>
+                        <span class="total-text">Active Devices</span>
+                    </div>
+                    <div class="stat-number online">
+                        <?= $stats['online'] ?? 0 ?>
+                    </div>
                 </div>
             </div>
-        <?php endforeach; ?>
+
+            <div class="stat-card">
+                <div class="stat-icon offline">
+                    <i class="bi bi-wifi-off"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">
+                        <span class="status-text">Offline</span>
+                        <span class="total-text">Inactive Devices</span>
+                    </div>
+                    <div class="stat-number offline">
+                        <?= $stats['offline'] ?? 0 ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon total">
+                    <i class="bi bi-phone"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">
+                        <span class="status-text">Total Devices</span>
+                        <span class="total-text">Registered</span>
+                    </div>
+                    <div class="stat-number total">
+                        <?= $stats['total'] ?? 0 ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon emergency">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">
+                        <span class="status-text">Emergencies</span>
+                        <span class="total-text">Active Alerts</span>
+                    </div>
+                    <div class="stat-number emergency">
+                        <?= $stats['emergencies'] ?? 0 ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Device Management Panel -->
+        <div class="eva-card">
+            <div class="card-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <div class="device-icon">
+                            📱
+                        </div>
+                        <div class="header-text">
+                            <h2><?= $isAdmin ? 'All Devices' : 'My Devices' ?></h2>
+                            <p>Device management and monitoring</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="header-actions">
+                        <div class="search-group">
+                            <input type="text" id="deviceSearch" placeholder="Search devices..." class="search-input">
+                            <i class="bi bi-search search-icon"></i>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <select id="statusFilter" class="filter-select">
+                                <option value="">All Status</option>
+                                <option value="online">Online</option>
+                                <option value="offline">Offline</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="addDevice()">
+                            <i class="bi bi-plus-lg me-1"></i>Add Device
+                        </button>
+                        
+                        <?php if ($isAdmin): ?>
+                            <button class="btn btn-secondary" onclick="addUser()">
+                                <i class="bi bi-person-plus me-1"></i>Add User
+                            </button>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <?php if (empty($devices)): ?>
+                    <!-- Empty State -->
+                    <div class="empty-state">
+                        <i class="bi bi-phone-vibrate display-1 text-muted"></i>
+                        <h3 class="mt-3">No Devices Found</h3>
+                        <p class="text-muted">
+                            <?= $isAdmin ? 'No devices are registered in the system.' : 'You haven\'t registered any devices yet.' ?>
+                        </p>
+                        <button class="btn btn-primary" onclick="addDevice()">
+                            <i class="bi bi-plus-lg me-1"></i>Add Your First Device
+                        </button>
+                    </div>
+                <?php else: ?>
+                    <!-- Device Table -->
+                    <div class="device-table-container">
+                        <table class="device-table">
+                            <thead>
+                                <tr>
+                                    <th>Device ID</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Assigned User</th>
+                                    <th>Last Online</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="deviceTableBody">
+                                <?php foreach ($devices as $device): ?>
+                                    <tr data-device-id="<?= htmlspecialchars($device['SerialNo']) ?>" 
+                                        data-status="<?= htmlspecialchars($device['status']) ?>">
+                                        
+                                        <!-- Device ID -->
+                                        <td>
+                                            <div class="device-id-cell">
+                                                <div class="device-name"><?= htmlspecialchars($device['SerialNo']) ?></div>
+                                                <div class="device-type"><?= htmlspecialchars($device['DeviceType'] ?? 'EVA Device') ?></div>
+                                            </div>
+                                        </td>
+                                        
+                                        <!-- Location -->
+                                        <td>
+                                            <div class="location-cell">
+                                                <i class="bi bi-geo-alt me-2 text-muted"></i>
+                                                <?= htmlspecialchars($device['Address'] ?? 'Unknown Location') ?>
+                                            </div>
+                                        </td>
+                                        
+                                        <!-- Status -->
+                                        <td>
+                                            <span class="status-badge status-<?= $device['status'] ?>">
+                                                <i class="bi bi-circle-fill me-1"></i>
+                                                <?= ucfirst($device['status']) ?>
+                                            </span>
+                                        </td>
+                                        
+                                        <!-- Assigned User -->
+                                        <td>
+                                            <div class="user-cell">
+                                                <div class="user-name"><?= htmlspecialchars($device['Email'] ?? 'Unknown') ?></div>
+                                                <div class="dependent-name"><?= htmlspecialchars($device['Firstname'] . ' ' . $device['Lastname']) ?></div>
+                                            </div>
+                                        </td>
+                                        
+                                        <!-- Last Online -->
+                                        <td>
+                                            <div class="last-online">
+                                                <?php 
+                                                if ($device['LastOnline']) {
+                                                    $lastOnline = new DateTime($device['LastOnline']);
+                                                    echo $lastOnline->format('M j, Y H:i');
+                                                } else {
+                                                    echo 'Never';
+                                                }
+                                                ?>
+                                            </div>
+                                        </td>
+                                        
+                                        <!-- Actions -->
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-action btn-view" 
+                                                        onclick="viewDevice('<?= htmlspecialchars($device['SerialNo']) ?>')" 
+                                                        title="View Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button class="btn-action btn-edit" 
+                                                        onclick="editDevice('<?= htmlspecialchars($device['SerialNo']) ?>')" 
+                                                        title="Edit Device">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn-action btn-delete" 
+                                                        onclick="deleteDevice('<?= htmlspecialchars($device['SerialNo']) ?>')" 
+                                                        title="Delete Device">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            Showing 1-<?= min(10, count($devices)) ?> of <?= count($devices) ?> devices
+                        </div>
+                        <nav aria-label="Device pagination">
+                            <ul class="pagination pagination-sm">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1">Previous</a>
+                                </li>
+                                <li class="page-item active">
+                                    <a class="page-link" href="#">1</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">2</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
     </div>
-<?php endif; ?>
+</div>
 
-<?php $deviceContent = ob_get_clean();?>
-
-<?php 
-echo $templates->render('panel', [
-    'icon' => 'fas fa-clock',
-    'title' => 'Recent Activities',
-    'headerActions' => $devicesHeaderActions,
-    'content' => $deviceContent
-]);
-
-?>
+<!-- View Device Modal -->
+<div class="modal fade" id="viewDeviceModal" tabindex="-1" aria-labelledby="viewDeviceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewDeviceModalLabel">
+                    <i class="bi bi-phone me-2"></i>Device Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="deviceDetails">
+                <!-- Device details will be populated by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="editDeviceFromModal()">
+                    <i class="bi bi-pencil me-1"></i>Edit Device
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Add Device Modal -->
-<div id="addDeviceModal" class="modal-overlay">
-    <div class="modal-container">
-        <div class="modal-header">
-            <h3><?= hasRole('admin') ? 'Add Device to System' : 'Register My Device' ?></h3>
-            <button class="modal-close" onclick="closeModal('addDeviceModal')">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <form method="POST" class="modal-form">
-            <input type="hidden" name="add_device" value="1">
-            
-            <?php if (hasRole('admin')): ?>
-                <!-- Admin can assign to any user -->
-                <div class="form-group">
-                    <label for="userId">Assign to User:</label>
-                    <div class="custom-select">
-                        <select name="user_id" id="userId" required>
-                            <option value="">Select User</option>
-                            <?php foreach (getAllUsers() as $user): ?>
-                                <option value="<?= $user['UserID'] ?>">
-                                    <?= htmlspecialchars($user['Email']) ?>
+<div class="modal fade" id="addDeviceModal" tabindex="-1" aria-labelledby="addDeviceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addDeviceModalLabel">
+                    <i class="bi bi-plus-lg me-2"></i>Add New Device
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addDeviceForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="deviceId" class="form-label">Device Serial Number</label>
+                                <input type="text" class="form-control" id="deviceId" name="deviceId" required>
+                                <div class="form-text">Enter the device serial number found on the device label</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="deviceType" class="form-label">Device Type</label>
+                                <select class="form-select" id="deviceType" name="deviceType" required>
+                                    <option value="">Select Device Type</option>
+                                    <option value="EVA-Standard">EVA Standard</option>
+                                    <option value="EVA-Pro">EVA Pro</option>
+                                    <option value="EVA-Mini">EVA Mini</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="emergencyNo1" class="form-label">Emergency Number 1</label>
+                                <input type="tel" class="form-control" id="emergencyNo1" name="emergencyNo1" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="emergencyNo2" class="form-label">Emergency Number 2</label>
+                                <input type="tel" class="form-control" id="emergencyNo2" name="emergencyNo2" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Location</label>
+                        <input type="text" class="form-control" id="location" name="location" placeholder="Room 101, Building A" required>
+                    </div>
+                    
+                    <?php if ($isAdmin): ?>
+                        <div class="mb-3">
+                            <label for="userId" class="form-label">Assign to User</label>
+                            <select class="form-select" id="userId" name="userId" required>
+                                <option value="">Select User</option>
+                                <?php foreach ($users as $user): ?>
+                                    <option value="<?= $user['UserID'] ?>"><?= htmlspecialchars($user['Email']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    <?php else: ?>
+                        <input type="hidden" id="userId" name="userId" value="<?= $userId ?>">
+                    <?php endif; ?>
+                    
+                    <div class="mb-3">
+                        <label for="dependentId" class="form-label">Assign to Family Member</label>
+                        <select class="form-select" id="dependentId" name="dependentId" required>
+                            <option value="">Select Family Member</option>
+                            <?php foreach ($dependents as $dependent): ?>
+                                <option value="<?= $dependent['DependentID'] ?>">
+                                    <?= htmlspecialchars($dependent['Firstname'] . ' ' . $dependent['Lastname']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                </div>
-            <?php else: ?>
-                <!-- Regular user - device assigned to themselves -->
-                <input type="hidden" name="user_id" value="<?= $userId ?>">
-            <?php endif; ?>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="emergencyNo1">Emergency Number 1:</label>
-                    <input type="tel" id="emergencyNo1" name="emergency_no1" placeholder="+60123456789" required>
-                </div>
-                <div class="form-group">
-                    <label for="emergencyNo2">Emergency Number 2:</label>
-                    <input type="tel" id="emergencyNo2" name="emergency_no2" placeholder="+60123456789" required>
-                </div>
+                </form>
             </div>
-            
-             <div class="form-group">
-                <label for="serialNo">Device Serial Number:</label>
-                <input type="text" id="serialNo" name="serial_no" placeholder="Enter device serial number" required>
-                <small>Serial number found on your device label</small>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveDevice()">
+                    <i class="bi bi-check-lg me-1"></i>Save Device
+                </button>
             </div>
-            
-            <div class="form-group">
-                <label for="dependentSelect">Assign to Family Member:</label>
-                <select id="dependentSelect" name="dependent_option" required onchange="toggleDependentFields()">
-                    <option value="">Select Option</option>
-                    <option value="existing">Existing Family Member</option>
-                    <option value="new">Add New Family Member</option>
-                </select>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Device Modal -->
+<div class="modal fade" id="editDeviceModal" tabindex="-1" aria-labelledby="editDeviceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editDeviceModalLabel">
+                    <i class="bi bi-pencil me-2"></i>Edit Device
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            
-            <!-- Existing Dependent Selection -->
-            <div id="existingDependentGroup" class="form-group hidden">
-                <label for="existingDependent">Select Family Member:</label>
-                <select id="existingDependent" name="existing_dependent">
-                    <option value="">Choose family member</option>
-                    <?php 
-                    $dependents = hasRole('admin') ? getAllDependents() : getUserDependents($userId);
-                    foreach ($dependents as $dependent): 
-                    ?>
-                        <option value="<?= $dependent['DependentID'] ?>">
-                            <?= htmlspecialchars($dependent['Firstname'] . ' ' . $dependent['Lastname']) ?>
-                            <?php if (isset($dependent['Email'])): ?>
-                                (<?= htmlspecialchars($dependent['Email']) ?>)
-                            <?php endif; ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            
-            <!-- New Dependent Fields -->
-            <div id="newDependentGroup" class="form-group hidden">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="firstname">First Name:</label>
-                        <input type="text" id="firstname" name="firstname" placeholder="First Name">
+            <div class="modal-body">
+                <form id="editDeviceForm">
+                    <input type="hidden" id="editDeviceId" name="deviceId">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editDeviceSerial" class="form-label">Device Serial Number</label>
+                                <input type="text" class="form-control" id="editDeviceSerial" name="deviceSerial" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editDeviceType" class="form-label">Device Type</label>
+                                <select class="form-select" id="editDeviceType" name="deviceType" required>
+                                    <option value="EVA-Standard">EVA Standard</option>
+                                    <option value="EVA-Pro">EVA Pro</option>
+                                    <option value="EVA-Mini">EVA Mini</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="lastname">Last Name:</label>
-                        <input type="text" id="lastname" name="lastname" placeholder="Last Name">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editEmergencyNo1" class="form-label">Emergency Number 1</label>
+                                <input type="tel" class="form-control" id="editEmergencyNo1" name="emergencyNo1" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editEmergencyNo2" class="form-label">Emergency Number 2</label>
+                                <input type="tel" class="form-control" id="editEmergencyNo2" name="emergencyNo2" required>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="gender">Gender:</label>
-                        <select id="gender" name="gender">
-                            <option value="">Select Gender</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
+                    
+                    <div class="mb-3">
+                        <label for="editLocation" class="form-label">Location</label>
+                        <input type="text" class="form-control" id="editLocation" name="location" required>
+                    </div>
+                    
+                    <?php if ($isAdmin): ?>
+                        <div class="mb-3">
+                            <label for="editUserId" class="form-label">Assigned User</label>
+                            <select class="form-select" id="editUserId" name="userId" required>
+                                <?php foreach ($users as $user): ?>
+                                    <option value="<?= $user['UserID'] ?>"><?= htmlspecialchars($user['Email']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <div class="mb-3">
+                        <label for="editDependentId" class="form-label">Assigned Family Member</label>
+                        <select class="form-select" id="editDependentId" name="dependentId" required>
+                            <?php foreach ($dependents as $dependent): ?>
+                                <option value="<?= $dependent['DependentID'] ?>">
+                                    <?= htmlspecialchars($dependent['Firstname'] . ' ' . $dependent['Lastname']) ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label for="dob">Date of Birth:</label>
-                        <input type="date" id="dob" name="dob">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="address">Address:</label>
-                    <input type="text" id="address" name="address" placeholder="Full Address">
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="postalCode">Postal Code:</label>
-                        <input type="text" id="postalCode" name="postal_code" placeholder="12345">
-                    </div>
-                    <div class="form-group">
-                        <label for="medicalCondition">Medical Condition:</label>
-                        <input type="text" id="medicalCondition" name="medical_condition" placeholder="Any medical conditions">
-                    </div>
-                </div>
+                </form>
             </div>
-            
-            <div class="modal-actions">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    <?= hasRole('admin') ? 'Add Device' : 'Register Device' ?>
-                </button>
-                <button type="button" class="btn btn-secondary" onclick="closeModal('addDeviceModal')">
-                    Cancel
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="updateDevice()">
+                    <i class="bi bi-check-lg me-1"></i>Update Device
                 </button>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
 <!-- Add User Modal (Admin Only) -->
-<?php if (hasRole('admin')): ?>
-<div id="addUserModal" class="modal-overlay">
-    <div class="modal-container">
-        <div class="modal-header">
-            <h3>Create New User</h3>
-            <button class="modal-close" onclick="closeModal('addUserModal')">
-                <i class="fas fa-times"></i>
-            </button>
+<?php if ($isAdmin): ?>
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addUserModalLabel">
+                    <i class="bi bi-person-plus me-2"></i>Add New User
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm">
+                    <div class="mb-3">
+                        <label for="userEmail" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="userEmail" name="email" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="userPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="userPassword" name="password" required>
+                        <div class="form-text">Must be at least 6 characters with uppercase, number, and special character</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="userRole" class="form-label">User Role</label>
+                        <select class="form-select" id="userRole" name="role">
+                            <option value="user">Regular User</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveUser()">
+                    <i class="bi bi-check-lg me-1"></i>Create User
+                </button>
+            </div>
         </div>
-        
-        <form action="/actions/auth/register.php" method="POST" class="modal-form">
-            <div class="form-group">
-                <label for="userEmail">Email Address:</label>
-                <input type="email" id="userEmail" name="email" placeholder="user@example.com" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="userPassword">Password:</label>
-                <input type="password" id="userPassword" name="newPassword" required>
-                <small>Must be 6+ characters with uppercase, number, and special character</small>
-            </div>
-            
-            <div class="form-group">
-                <label for="confirmUserPassword">Confirm Password:</label>
-                <input type="password" id="confirmUserPassword" name="confirmPassword" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="userRole">User Role:</label>
-                <select id="userRole" name="user_role">
-                    <option value="user">Regular User</option>
-                    <option value="admin">Administrator</option>
-                </select>
-            </div>
-            
-            <div class="modal-actions">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-user-plus"></i>
-                    Create User
-                </button>
-                <button type="button" class="btn btn-secondary" onclick="closeModal('addUserModal')">
-                    Cancel
-                </button>
-            </div>
-        </form>
     </div>
 </div>
 <?php endif; ?>
+
+<style>
+/* Dashboard Specific Styles */
+.card-header {
+    background: #ffffff;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 20px 24px;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.device-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff5f5;
+    border-radius: 8px;
+}
+
+.header-text h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.header-text p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-group {
+    position: relative;
+}
+
+.search-input {
+    padding: 8px 35px 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 200px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #4285f4;
+    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    pointer-events: none;
+}
+
+.filter-group {
+    position: relative;
+}
+
+.filter-select {
+    padding: 8px 32px 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: white;
+    font-size: 14px;
+    color: #333;
+    min-width: 120px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+}
+
+/* Device Table */
+.device-table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #f0f0f0;
+}
+
+.device-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.device-table thead {
+    background: #f8f9fa;
+}
+
+.device-table thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.device-table tbody td {
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+.device-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.device-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Table Cell Styles */
+.device-id-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.device-name {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 14px;
+}
+
+.device-type {
+    font-size: 12px;
+    color: #666;
+}
+
+.location-cell {
+    display: flex;
+    align-items: center;
+    color: #1a1a1a;
+}
+
+.user-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-name {
+    font-weight: 500;
+    color: #1a1a1a;
+    font-size: 14px;
+}
+
+.dependent-name {
+    font-size: 12px;
+    color: #666;
+}
+
+.last-online {
+    color: #666;
+    font-size: 13px;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.status-online {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.status-offline {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.btn-action {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 12px;
+}
+
+.btn-view {
+    background: rgba(66, 133, 244, 0.1);
+    color: #4285f4;
+}
+
+.btn-view:hover {
+    background: #4285f4;
+    color: white;
+}
+
+.btn-edit {
+    background: rgba(251, 191, 36, 0.1);
+    color: #f59e0b;
+}
+
+.btn-edit:hover {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-delete {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.btn-delete:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* Pagination */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    margin-top: 16px;
+}
+
+.pagination-info {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #718096;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #e2e8f0;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    color: #4a5568;
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 500px;
+    margin: 0 auto 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+    
+    .header-actions {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .search-input {
+        width: 100%;
+    }
+    
+    .device-table-container {
+        overflow-x: auto;
+    }
+    
+    .device-table {
+        min-width: 600px;
+    }
+}
+</style>
+
+<script>
+// Static device data for demonstration
+const devices = <?= json_encode($devices) ?>;
+const users = <?= json_encode($users) ?>;
+const dependents = <?= json_encode($dependents) ?>;
+
+let currentEditingDevice = null;
+
+// Initialize dashboard functionality
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSearch();
+    initializeFilters();
+});
+
+// Search functionality
+function initializeSearch() {
+    const searchInput = document.getElementById('deviceSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            filterDevices(searchTerm);
+        });
+    }
+}
+
+// Filter functionality
+function initializeFilters() {
+    const statusFilter = document.getElementById('statusFilter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            const status = this.value.toLowerCase();
+            filterDevicesByStatus(status);
+        });
+    }
+}
+
+// Filter devices by search term
+function filterDevices(searchTerm) {
+    const tableRows = document.querySelectorAll('#deviceTableBody tr');
+    
+    tableRows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Filter devices by status
+function filterDevicesByStatus(status) {
+    const tableRows = document.querySelectorAll('#deviceTableBody tr');
+    
+    tableRows.forEach(row => {
+        const deviceStatus = row.dataset.status;
+        if (!status || deviceStatus === status) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// View device details
+function viewDevice(deviceId) {
+    const device = devices.find(d => d.SerialNo === deviceId);
+    if (device) {
+        document.getElementById('deviceDetails').innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Device Information</h6>
+                    <table class="table table-sm">
+                        <tr><td><strong>Device ID:</strong></td><td>${device.SerialNo}</td></tr>
+                        <tr><td><strong>Type:</strong></td><td>${device.DeviceType || 'EVA Device'}</td></tr>
+                        <tr><td><strong>Status:</strong></td><td><span class="status-badge status-${device.status}"><i class="bi bi-circle-fill me-1"></i>${device.status}</span></td></tr>
+                        <tr><td><strong>Location:</strong></td><td>${device.Address || 'Unknown'}</td></tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h6>Assignment Details</h6>
+                    <table class="table table-sm">
+                        <tr><td><strong>User:</strong></td><td>${device.Email || 'Unknown'}</td></tr>
+                        <tr><td><strong>Family Member:</strong></td><td>${device.Firstname} ${device.Lastname}</td></tr>
+                        <tr><td><strong>Emergency 1:</strong></td><td>${device.EmergencyNo1 || 'Not set'}</td></tr>
+                        <tr><td><strong>Emergency 2:</strong></td><td>${device.EmergencyNo2 || 'Not set'}</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h6>Additional Information</h6>
+                    <table class="table table-sm">
+                        <tr><td><strong>Registered Date:</strong></td><td>${device.RegisteredDate ? new Date(device.RegisteredDate).toLocaleDateString() : 'Unknown'}</td></tr>
+                        <tr><td><strong>Last Online:</strong></td><td>${device.LastOnline ? new Date(device.LastOnline).toLocaleString() : 'Never'}</td></tr>
+                        <tr><td><strong>Medical Condition:</strong></td><td>${device.MedicalCondition || 'None specified'}</td></tr>
+                    </table>
+                </div>
+            </div>
+        `;
+        
+        currentEditingDevice = deviceId;
+        new bootstrap.Modal(document.getElementById('viewDeviceModal')).show();
+    }
+}
+
+// Edit device from modal
+function editDeviceFromModal() {
+    bootstrap.Modal.getInstance(document.getElementById('viewDeviceModal')).hide();
+    editDevice(currentEditingDevice);
+}
+
+// Edit device
+function editDevice(deviceId) {
+    const device = devices.find(d => d.SerialNo === deviceId);
+    if (device) {
+        // Populate edit form
+        document.getElementById('editDeviceId').value = device.SerialNo;
+        document.getElementById('editDeviceSerial').value = device.SerialNo;
+        document.getElementById('editDeviceType').value = device.DeviceType || 'EVA-Standard';
+        document.getElementById('editEmergencyNo1').value = device.EmergencyNo1 || '';
+        document.getElementById('editEmergencyNo2').value = device.EmergencyNo2 || '';
+        document.getElementById('editLocation').value = device.Address || '';
+        
+        if (document.getElementById('editUserId')) {
+            document.getElementById('editUserId').value = device.UserIDFK || '';
+        }
+        document.getElementById('editDependentId').value = device.DependentIDFK || '';
+        
+        new bootstrap.Modal(document.getElementById('editDeviceModal')).show();
+    }
+}
+
+// Delete device
+function deleteDevice(deviceId) {
+    const device = devices.find(d => d.SerialNo === deviceId);
+    if (device && confirm(`Are you sure you want to delete device ${deviceId}?\n\nThis action cannot be undone.`)) {
+        // Simulate deletion
+        showToast('Device deleted successfully!', 'success');
+        
+        // Remove from table
+        const row = document.querySelector(`tr[data-device-id="${deviceId}"]`);
+        if (row) {
+            row.remove();
+        }
+        
+        // In a real application, you would make an API call here
+        console.log('Deleting device:', deviceId);
+    }
+}
+
+// Add device
+function addDevice() {
+    // Reset form
+    document.getElementById('addDeviceForm').reset();
+    new bootstrap.Modal(document.getElementById('addDeviceModal')).show();
+}
+
+// Save device
+function saveDevice() {
+    const form = document.getElementById('addDeviceForm');
+    const formData = new FormData(form);
+    
+    // Basic validation
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    // Simulate saving
+    const deviceData = {
+        deviceId: formData.get('deviceId'),
+        deviceType: formData.get('deviceType'),
+        location: formData.get('location'),
+        userId: formData.get('userId'),
+        dependentId: formData.get('dependentId'),
+        emergencyNo1: formData.get('emergencyNo1'),
+        emergencyNo2: formData.get('emergencyNo2')
+    };
+    
+    console.log('Saving device:', deviceData);
+    
+    // Close modal and show success message
+    bootstrap.Modal.getInstance(document.getElementById('addDeviceModal')).hide();
+    showToast('Device added successfully!', 'success');
+    
+    // In a real application, you would make an API call and refresh the table
+    setTimeout(() => {
+        location.reload();
+    }, 1500);
+}
+
+// Update device
+function updateDevice() {
+    const form = document.getElementById('editDeviceForm');
+    const formData = new FormData(form);
+    
+    // Basic validation
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    // Simulate updating
+    const deviceData = {
+        deviceId: formData.get('deviceId'),
+        deviceType: formData.get('deviceType'),
+        location: formData.get('location'),
+        userId: formData.get('userId'),
+        dependentId: formData.get('dependentId'),
+        emergencyNo1: formData.get('emergencyNo1'),
+        emergencyNo2: formData.get('emergencyNo2')
+    };
+    
+    console.log('Updating device:', deviceData);
+    
+    // Close modal and show success message
+    bootstrap.Modal.getInstance(document.getElementById('editDeviceModal')).hide();
+    showToast('Device updated successfully!', 'success');
+    
+    // In a real application, you would make an API call and refresh the table
+    setTimeout(() => {
+        location.reload();
+    }, 1500);
+}
+
+// Add user (Admin only)
+function addUser() {
+    // Reset form
+    document.getElementById('addUserForm').reset();
+    new bootstrap.Modal(document.getElementById('addUserModal')).show();
+}
+
+// Save user
+function saveUser() {
+    const form = document.getElementById('addUserForm');
+    const formData = new FormData(form);
+    
+    // Basic validation
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    // Password validation
+    const password = formData.get('password');
+    const confirmPassword = formData.get('confirmPassword');
+    
+    if (password !== confirmPassword) {
+        showToast('Passwords do not match!', 'error');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showToast('Password must be at least 6 characters long!', 'error');
+        return;
+    }
+    
+    // Simulate saving
+    const userData = {
+        email: formData.get('email'),
+        role: formData.get('role')
+    };
+    
+    console.log('Saving user:', userData);
+    
+    // Close modal and show success message
+    bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+    showToast('User created successfully!', 'success');
+    
+    // In a real application, you would make an API call
+}
+
+// Show toast notification
+function showToast(message, type = 'info') {
+    // Create toast element
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+    
+    // Add to toast container
+    let toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '1055';
+        document.body.appendChild(toastContainer);
+    }
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    // Show toast
+    const toastElement = toastContainer.lastElementChild;
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
+    
+    // Remove toast element after it's hidden
+    toastElement.addEventListener('hidden.bs.toast', function() {
+        this.remove();
+    });
+}
+
+// Refresh dashboard
+function refreshDashboard() {
+    location.reload();
+}
+</script>
 
 <?php include '../includes/footer.php'; ?>
