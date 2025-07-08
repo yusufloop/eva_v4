@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../config/config.php';
 /**
  * Get admin dashboard statistics
  */
-function getAdminDashboardStats() {
+function getAdminDashboardData() {
     $pdo = getDatabase();
     
     try {
@@ -37,7 +37,7 @@ function getAdminDashboardStats() {
         ];
         
     } catch (PDOException $e) {
-        error_log("Admin dashboard stats error: " . $e->getMessage());
+        error_log("Admin dashboard data error: " . $e->getMessage());
         return [
             'total_devices' => 0,
             'online_devices' => 0,
@@ -50,7 +50,7 @@ function getAdminDashboardStats() {
 /**
  * Get user dashboard statistics
  */
-function getUserDashboardStats($userId) {
+function getUserDashboardData($userId) {
     $pdo = getDatabase();
     
     try {
@@ -86,7 +86,7 @@ function getUserDashboardStats($userId) {
         ];
         
     } catch (PDOException $e) {
-        error_log("User dashboard stats error: " . $e->getMessage());
+        error_log("User dashboard data error: " . $e->getMessage());
         return [
             'total_devices' => 0,
             'online_devices' => 0,
@@ -95,18 +95,3 @@ function getUserDashboardStats($userId) {
         ];
     }
 }
-
-/**
- * Get device statistics for compatibility
- */
-function getDeviceStatistics() {
-    return getAdminDashboardStats();
-}
-
-/**
- * Get user device statistics for compatibility
- */
-function getUserDeviceStatistics($userId) {
-    return getUserDashboardStats($userId);
-}
-?>

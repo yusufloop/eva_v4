@@ -1,11 +1,10 @@
 <?php
 session_start();
 require_once '../config/config.php';
+require_once '../helpers/device_helpers.php';
 require_once '../helpers/auth_helper.php';
 require_once '../actions/dashboard/stats.php';
-require_once '../actions/dashboard/devices.php';
 require_once '../actions/dashboard/activities.php';
-require_once '../helpers/device_helpers.php';
 
 // Check authentication
 requireAuth();
@@ -33,13 +32,13 @@ $breadcrumbs = [
 
 // Get dashboard data based on user role
 if ($isAdmin) {
-    $dashboardData = getAdminDashboardStats();
+    $dashboardData = getAdminDashboardData();
     $recentActivities = getRecentSystemActivities(10);
     $devices = getAllDevicesWithStatus();
     $users = getAllUsers();
     $dependents = getAllDependents();
 } else {
-    $dashboardData = getUserDashboardStats($userId);
+    $dashboardData = getUserDashboardData($userId);
     $recentActivities = getUserRecentActivities($userId, 5);
     $devices = getUserDevicesWithStatus($userId);
     $users = [];

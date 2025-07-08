@@ -27,7 +27,7 @@ switch ($action) {
         require_once __DIR__ . '/verify.php';
         break;
         
-    case 'forgot_password':
+    case 'forget_password':
         require_once __DIR__ . '/forget-password.php';
         break;
         
@@ -40,4 +40,3 @@ switch ($action) {
         echo json_encode(['error' => 'Authentication action not found']);
         break;
 }
-?>

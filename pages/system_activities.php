@@ -7,6 +7,7 @@ $currentPage = 'system_activities';
 require_once '../config/config.php';
 require_once '../helpers/auth_helper.php';
 require_once '../actions/dashboard/activities.php';
+require_once '../helpers/component_helper.php';
 
 // Check authentication
 requireAuth();

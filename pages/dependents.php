@@ -1,8 +1,9 @@
 <?php
-require_once '../config/config.php';
+require '../helpers/device_helpers.php';
+require '../actions/dashboard/stats.php';
+require '../helpers/component_helper.php';
 require_once '../helpers/auth_helper.php';
 require_once '../actions/dependent/list.php';
-require '../helpers/component_helper.php';
 
 // Page assets
 $additionalCSS = [
