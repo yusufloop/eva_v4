@@ -6,7 +6,7 @@ $currentPage = 'my_dependents';
 // Include dependencies
 require_once '../config/config.php';
 require_once '../helpers/auth_helper.php';
-require_once '../actions/dependent/list.php';
+require_once '../helpers/device_helpers.php';
 require '../helpers/component_helper.php';
 
 // Check authentication
@@ -31,7 +31,7 @@ $breadcrumbs = [
 ];
 
 // Get dependents data
-$dependents = getUserDependents($userId);
+$dependents = getUserDependents($userId); // From device_helpers.php
 
 // Include header
 include '../includes/header.php';

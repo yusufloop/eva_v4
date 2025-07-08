@@ -6,6 +6,7 @@ $currentPage = 'alert_history';
 // Include dependencies
 require_once '../config/config.php';
 require_once '../helpers/auth_helper.php';
+require_once '../helpers/device_helpers.php'; // Reuse existing helper
 require_once '../helpers/component_helper.php';
 
 // Check authentication

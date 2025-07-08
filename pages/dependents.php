@@ -1,9 +1,11 @@
 <?php
 require '../helpers/device_helpers.php';
-require '../actions/dashboard/stats.php';
+require_once '../config/config.php';
 require '../helpers/component_helper.php';
 require_once '../helpers/auth_helper.php';
-require_once '../actions/dependent/list.php';
+
+// Check authentication
+requireAuth();
 
 // Page assets
 $additionalCSS = [
@@ -18,12 +20,12 @@ include '../includes/header.php';
 // Role-based page configuration
 if (hasRole('admin')):
     $pageTitle = 'All Dependents';
-    $dependents = getAllDependents();
-    $users = getAllUsers(); // For dropdown
+    $dependents = getAllDependents(); // From device_helpers.php
+    $users = getAllUsers(); // From device_helpers.php
     
 elseif (hasRole('user')):
     $pageTitle = 'My Family Members';
-    $dependents = getUserDependents($userId);
+    $dependents = getUserDependents($userId); // From device_helpers.php
     $users = []; // Regular users don't need user dropdown
 endif;
 ?>

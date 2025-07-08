@@ -6,7 +6,7 @@ $currentPage = 'call_logs';
 // Include dependencies
 require_once '../config/config.php';
 require_once '../helpers/auth_helper.php';
-require_once '../helpers/call_helper.php';
+require_once '../helpers/call_helper.php'; // Reuse existing helper
 require_once '../helpers/component_helper.php';
 
 // Check authentication
