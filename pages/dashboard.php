@@ -1,17 +1,18 @@
 <?php
-// Page configuration
-$pageTitle = 'Dashboard';
-$currentPage = 'dashboard';
-
-// Include dependencies
+session_start();
 require_once '../config/config.php';
 require_once '../helpers/auth_helper.php';
+require_once '../actions/dashboard/stats.php';
+require_once '../actions/dashboard/devices.php';
+require_once '../actions/dashboard/activities.php';
 require_once '../helpers/device_helpers.php';
 
 // Check authentication
 requireAuth();
 
-// Get current user info
+// Page configuration
+$pageTitle = hasRole('admin') ? 'Admin Dashboard' : 'My Dashboard';
+$currentPage = 'dashboard';
 $userId = getCurrentUserId();
 $isAdmin = hasRole('admin');
 
@@ -32,15 +33,17 @@ $breadcrumbs = [
 
 // Get dashboard data based on user role
 if ($isAdmin) {
+    $dashboardData = getAdminDashboardStats();
+    $recentActivities = getRecentSystemActivities(10);
     $devices = getAllDevicesWithStatus();
     $users = getAllUsers();
     $dependents = getAllDependents();
-    $stats = getDeviceStatistics();
 } else {
+    $dashboardData = getUserDashboardStats($userId);
+    $recentActivities = getUserRecentActivities($userId, 5);
     $devices = getUserDevicesWithStatus($userId);
     $users = [];
     $dependents = getUserDependents($userId);
-    $stats = getUserDeviceStatistics($userId);
 }
 
 // Include header
@@ -68,7 +71,7 @@ include '../includes/header.php';
                         <span class="total-text">Active Devices</span>
                     </div>
                     <div class="stat-number online">
-                        <?= $stats['online'] ?? 0 ?>
+                        <?= $dashboardData['online_devices'] ?? 0 ?>
                     </div>
                 </div>
             </div>
@@ -83,7 +86,7 @@ include '../includes/header.php';
                         <span class="total-text">Inactive Devices</span>
                     </div>
                     <div class="stat-number offline">
-                        <?= $stats['offline'] ?? 0 ?>
+                        <?= $dashboardData['offline_devices'] ?? 0 ?>
                     </div>
                 </div>
             </div>
@@ -98,7 +101,7 @@ include '../includes/header.php';
                         <span class="total-text">Registered</span>
                     </div>
                     <div class="stat-number total">
-                        <?= $stats['total'] ?? 0 ?>
+                        <?= $dashboardData['total_devices'] ?? 0 ?>
                     </div>
                 </div>
             </div>
@@ -113,7 +116,7 @@ include '../includes/header.php';
                         <span class="total-text">Active Alerts</span>
                     </div>
                     <div class="stat-number emergency">
-                        <?= $stats['emergencies'] ?? 0 ?>
+                        <?= $dashboardData['active_emergencies'] ?? 0 ?>
                     </div>
                 </div>
             </div>
@@ -290,6 +293,42 @@ include '../includes/header.php';
                 <?php endif; ?>
             </div>
         </div>
+        
+        <!-- Recent Activities Panel -->
+        <?php if (!empty($recentActivities)): ?>
+        <div class="eva-card mt-4">
+            <div class="card-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <div class="activity-icon">
+                            📋
+                        </div>
+                        <div class="header-text">
+                            <h2>Recent Activities</h2>
+                            <p>Latest system activities and events</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="activity-list">
+                    <?php foreach (array_slice($recentActivities, 0, 5) as $activity): ?>
+                        <div class="activity-item">
+                            <div class="activity-icon-wrapper">
+                                <i class="<?= getActivityIcon($activity['type']) ?> <?= getActivityColorClass($activity['type']) ?>"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title"><?= htmlspecialchars($activity['title']) ?></div>
+                                <div class="activity-description"><?= htmlspecialchars($activity['description']) ?></div>
+                                <div class="activity-time"><?= formatTimeAgo($activity['created_at']) ?></div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -872,6 +911,7 @@ include '../includes/header.php';
 const devices = <?= json_encode($devices) ?>;
 const users = <?= json_encode($users) ?>;
 const dependents = <?= json_encode($dependents) ?>;
+const dashboardApiUrl = '../actions/dashboard/index.php';
 
 let currentEditingDevice = null;
 
@@ -933,44 +973,55 @@ function filterDevicesByStatus(status) {
 
 // View device details
 function viewDevice(deviceId) {
-    const device = devices.find(d => d.SerialNo === deviceId);
-    if (device) {
-        document.getElementById('deviceDetails').innerHTML = `
-            <div class="row">
-                <div class="col-md-6">
-                    <h6>Device Information</h6>
-                    <table class="table table-sm">
-                        <tr><td><strong>Device ID:</strong></td><td>${device.SerialNo}</td></tr>
-                        <tr><td><strong>Type:</strong></td><td>${device.DeviceType || 'EVA Device'}</td></tr>
-                        <tr><td><strong>Status:</strong></td><td><span class="status-badge status-${device.status}"><i class="bi bi-circle-fill me-1"></i>${device.status}</span></td></tr>
-                        <tr><td><strong>Location:</strong></td><td>${device.Address || 'Unknown'}</td></tr>
-                    </table>
+    // Use API to get device details
+    fetch(`${dashboardApiUrl}?action=device_details&serial_no=${encodeURIComponent(deviceId)}`)
+        .then(response => response.json())
+        .then(device => {
+            if (device.error) {
+                showToast(device.error, 'error');
+                return;
+            }
+            
+            document.getElementById('deviceDetails').innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Device Information</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Device ID:</strong></td><td>${device.SerialNoFK}</td></tr>
+                            <tr><td><strong>Type:</strong></td><td>${device.DeviceType || 'EVA Device'}</td></tr>
+                            <tr><td><strong>Status:</strong></td><td><span class="status-badge status-${device.DeviceStatus}"><i class="bi bi-circle-fill me-1"></i>${device.DeviceStatus}</span></td></tr>
+                            <tr><td><strong>Location:</strong></td><td>${device.Address || 'Unknown'}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Assignment Details</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>User:</strong></td><td>${device.UserEmail || 'Unknown'}</td></tr>
+                            <tr><td><strong>Family Member:</strong></td><td>${device.Firstname} ${device.Lastname}</td></tr>
+                            <tr><td><strong>Emergency 1:</strong></td><td>${device.EmergencyNo1 || 'Not set'}</td></tr>
+                            <tr><td><strong>Emergency 2:</strong></td><td>${device.EmergencyNo2 || 'Not set'}</td></tr>
+                        </table>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <h6>Assignment Details</h6>
-                    <table class="table table-sm">
-                        <tr><td><strong>User:</strong></td><td>${device.Email || 'Unknown'}</td></tr>
-                        <tr><td><strong>Family Member:</strong></td><td>${device.Firstname} ${device.Lastname}</td></tr>
-                        <tr><td><strong>Emergency 1:</strong></td><td>${device.EmergencyNo1 || 'Not set'}</td></tr>
-                        <tr><td><strong>Emergency 2:</strong></td><td>${device.EmergencyNo2 || 'Not set'}</td></tr>
-                    </table>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6>Additional Information</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Registered Date:</strong></td><td>${device.RegisteredDate ? new Date(device.RegisteredDate).toLocaleDateString() : 'Unknown'}</td></tr>
+                            <tr><td><strong>Last Online:</strong></td><td>${device.LastOnline ? new Date(device.LastOnline).toLocaleString() : 'Never'}</td></tr>
+                            <tr><td><strong>Medical Condition:</strong></td><td>${device.MedicalCondition || 'None specified'}</td></tr>
+                        </table>
+                    </div>
                 </div>
-            </div>
-            <div class="row mt-3">
-                <div class="col-12">
-                    <h6>Additional Information</h6>
-                    <table class="table table-sm">
-                        <tr><td><strong>Registered Date:</strong></td><td>${device.RegisteredDate ? new Date(device.RegisteredDate).toLocaleDateString() : 'Unknown'}</td></tr>
-                        <tr><td><strong>Last Online:</strong></td><td>${device.LastOnline ? new Date(device.LastOnline).toLocaleString() : 'Never'}</td></tr>
-                        <tr><td><strong>Medical Condition:</strong></td><td>${device.MedicalCondition || 'None specified'}</td></tr>
-                    </table>
-                </div>
-            </div>
-        `;
-        
-        currentEditingDevice = deviceId;
-        new bootstrap.Modal(document.getElementById('viewDeviceModal')).show();
-    }
+            `;
+            
+            currentEditingDevice = deviceId;
+            new bootstrap.Modal(document.getElementById('viewDeviceModal')).show();
+        })
+        .catch(error => {
+            console.error('Error fetching device details:', error);
+            showToast('Error loading device details', 'error');
+        });
 }
 
 // Edit device from modal
@@ -1002,19 +1053,39 @@ function editDevice(deviceId) {
 
 // Delete device
 function deleteDevice(deviceId) {
-    const device = devices.find(d => d.SerialNo === deviceId);
-    if (device && confirm(`Are you sure you want to delete device ${deviceId}?\n\nThis action cannot be undone.`)) {
-        // Simulate deletion
-        showToast('Device deleted successfully!', 'success');
+    if (confirm(`Are you sure you want to delete device ${deviceId}?\n\nThis action cannot be undone.`)) {
+        // Use API to delete device
+        const formData = new FormData();
+        formData.append('action', 'delete_device');
+        formData.append('serial_no', deviceId);
         
-        // Remove from table
-        const row = document.querySelector(`tr[data-device-id="${deviceId}"]`);
-        if (row) {
-            row.remove();
-        }
-        
-        // In a real application, you would make an API call here
-        console.log('Deleting device:', deviceId);
+        fetch(dashboardApiUrl, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                showToast(result.message, 'success');
+                
+                // Remove from table
+                const row = document.querySelector(`tr[data-device-id="${deviceId}"]`);
+                if (row) {
+                    row.remove();
+                }
+                
+                // Refresh page after a delay
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                showToast(result.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting device:', error);
+            showToast('Error deleting device', 'error');
+        });
     }
 }
 
@@ -1036,27 +1107,39 @@ function saveDevice() {
         return;
     }
     
-    // Simulate saving
-    const deviceData = {
-        deviceId: formData.get('deviceId'),
-        deviceType: formData.get('deviceType'),
-        location: formData.get('location'),
-        userId: formData.get('userId'),
-        dependentId: formData.get('dependentId'),
-        emergencyNo1: formData.get('emergencyNo1'),
-        emergencyNo2: formData.get('emergencyNo2')
-    };
+    // Add action to form data
+    formData.append('action', 'add_device');
     
-    console.log('Saving device:', deviceData);
+    // Map form fields to expected API format
+    formData.append('serial_no', formData.get('deviceId'));
+    formData.append('emergency_no1', formData.get('emergencyNo1'));
+    formData.append('emergency_no2', formData.get('emergencyNo2'));
+    formData.append('address', formData.get('location'));
+    formData.append('existing_dependent', formData.get('dependentId'));
     
-    // Close modal and show success message
-    bootstrap.Modal.getInstance(document.getElementById('addDeviceModal')).hide();
-    showToast('Device added successfully!', 'success');
-    
-    // In a real application, you would make an API call and refresh the table
-    setTimeout(() => {
-        location.reload();
-    }, 1500);
+    // Use API to save device
+    fetch(dashboardApiUrl, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            bootstrap.Modal.getInstance(document.getElementById('addDeviceModal')).hide();
+            showToast(result.message, 'success');
+            
+            // Refresh page after a delay
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showToast(result.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving device:', error);
+        showToast('Error saving device', 'error');
+    });
 }
 
 // Update device
@@ -1181,6 +1264,98 @@ function showToast(message, type = 'info') {
 function refreshDashboard() {
     location.reload();
 }
+
+// Activity helper functions
+function getActivityIcon(type) {
+    const icons = {
+        'emergency': 'bi-exclamation-triangle',
+        'device': 'bi-phone',
+        'user': 'bi-person',
+        'system': 'bi-gear'
+    };
+    return icons[type] || 'bi-bell';
+}
+
+function getActivityColorClass(type) {
+    const colors = {
+        'emergency': 'text-danger',
+        'device': 'text-primary',
+        'user': 'text-success',
+        'system': 'text-info'
+    };
+    return colors[type] || 'text-secondary';
+}
+
+function formatTimeAgo(datetime) {
+    const time = new Date() - new Date(datetime);
+    const seconds = Math.floor(time / 1000);
+    
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return Math.floor(seconds / 60) + ' minutes ago';
+    if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
+    if (seconds < 2592000) return Math.floor(seconds / 86400) + ' days ago';
+    
+    return new Date(datetime).toLocaleDateString();
+}
 </script>
+
+<style>
+/* Activity List Styles */
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.activity-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+}
+
+.activity-item:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.activity-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    background: #f8f9fa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.activity-description {
+    color: #666;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.activity-time {
+    color: #999;
+    font-size: 12px;
+}
+</style>
 
 <?php include '../includes/footer.php'; ?>

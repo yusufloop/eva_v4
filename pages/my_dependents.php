@@ -1,35 +1,46 @@
 <?php
+// Page configuration
+$pageTitle = 'My Family Members';
+$currentPage = 'my_dependents';
+
+// Include dependencies
 require_once '../config/config.php';
 require_once '../helpers/auth_helper.php';
 require_once '../actions/dependent/list.php';
 require '../helpers/component_helper.php';
 
-// Page assets
+// Check authentication
+requireAuth();
+
+// Get current user info
+$userId = getCurrentUserId();
+
+// Page-specific assets
 $additionalCSS = [
     '../assets/css/dashboard.css',
     '../assets/css/components/stats-card.css',
     '../assets/css/components/panel.css'
 ];
+
 $additionalJS = ['../assets/js/dashboard.js', '../assets/js/dependents.js'];
 
-include '../includes/header.php';
+// Breadcrumb configuration
+$breadcrumbs = [
+    ['title' => 'Dashboard', 'url' => 'dashboard.php', 'icon' => 'bi bi-house'],
+    ['title' => 'My Family Members', 'url' => '#']
+];
 
-// Role-based page configuration
-if (hasRole('admin')):
-    $pageTitle = 'All Dependents';
-    $dependents = getAllDependents();
-    $users = getAllUsers(); // For dropdown
-    
-elseif (hasRole('user')):
-    $pageTitle = 'My Family Members';
-    $dependents = getUserDependents($userId);
-    $users = []; // Regular users don't need user dropdown
-endif;
+// Get dependents data
+$dependents = getUserDependents($userId);
+
+// Include header
+include '../includes/header.php';
 ?>
 
 <?php include '../includes/topbar.php'; ?>
+
 <div class="dashboard-layout">
-    <!-- Sidebar Navigation -->
+    <!-- Sidebar -->
     <?php include '../includes/sidebar.php'; ?>
     
     <!-- Main Content -->
@@ -51,13 +62,8 @@ endif;
                 <option value="medical-condition">Has Medical Condition</option>
             </select>
         </div>
-        <?php if (hasRole('admin')): ?>
-            <button class="btn btn-sm btn-outline" onclick="openBulkActions()">
-                <i class="fas fa-cog"></i> Bulk Actions
-            </button>
-        <?php endif; ?>
         <button class="btn btn-primary" onclick="openAddDependentModal()">
-            <i class="fas fa-plus"></i> Add Dependent
+            <i class="fas fa-plus"></i> Add Family Member
         </button>
         <?php
         $headerActions = ob_get_clean();
@@ -69,17 +75,11 @@ endif;
         <?php if (empty($dependents)): ?>
             <div class="empty-state">
                 <i class="fas fa-users"></i>
-                <h3>No Dependents Found</h3>
-                <p>
-                    <?php if (hasRole('admin')): ?>
-                        No dependents are currently registered in the system.
-                    <?php else: ?>
-                        You haven't registered any family members yet.
-                    <?php endif; ?>
-                </p>
+                <h3>No Family Members Found</h3>
+                <p>You haven't registered any family members yet.</p>
                 <button class="btn btn-primary" onclick="openAddDependentModal()">
                     <i class="fas fa-plus"></i> 
-                    Add Dependent
+                    Add Your First Family Member
                 </button>
             </div>
         <?php else: ?>
@@ -95,9 +95,6 @@ endif;
                             <th>Address</th>
                             <th>Postal Code</th>
                             <th>Medical Condition</th>
-                            <?php if (hasRole('admin')): ?>
-                                <th>User</th>
-                            <?php endif; ?>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -149,14 +146,6 @@ endif;
                                         <span class="no-condition">None</span>
                                     <?php endif; ?>
                                 </td>
-                                <?php if (hasRole('admin')): ?>
-                                    <td data-label="User">
-                                        <div class="user-info">
-                                            <i class="fas fa-user"></i>
-                                            <?= htmlspecialchars($dependent['UserEmail'] ?? 'No User') ?>
-                                        </div>
-                                    </td>
-                                <?php endif; ?>
                                 <td data-label="Actions">
                                     <div class="action-buttons">
                                         <button class="btn-icon btn-view" onclick="viewDependent('<?= $dependent['DependentID'] ?>')" title="View Details">
@@ -165,11 +154,9 @@ endif;
                                         <button class="btn-icon btn-edit" onclick="editDependent('<?= $dependent['DependentID'] ?>')" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <?php if (hasRole('admin') || $dependent['UserIDFK'] == $userId): ?>
-                                            <button class="btn-icon btn-delete" onclick="deleteDependent('<?= $dependent['DependentID'] ?>')" title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        <?php endif; ?>
+                                        <button class="btn-icon btn-delete" onclick="deleteDependent('<?= $dependent['DependentID'] ?>')" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -197,32 +184,15 @@ endif;
 <div id="addDependentModal" class="modal-overlay">
     <div class="modal-container">
         <div class="modal-header">
-            <h3 id="modalTitle">Add New Dependent</h3>
+            <h3 id="modalTitle">Add New Family Member</h3>
             <button class="modal-close" onclick="closeModal('addDependentModal')">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         
-        <form id="dependentForm" method="POST" action="../actions/dependent/add.php" class="modal-form">
+        <form id="dependentForm" method="POST" action="../actions/dependent/create.php" class="modal-form">
             <input type="hidden" name="dependentId" id="dependentId" value="">
-            
-            <?php if (hasRole('admin')): ?>
-                <!-- Admin can assign to any user -->
-                <div class="form-group">
-                    <label for="userId">Assign to User:</label>
-                    <select name="user_id" id="userId" required>
-                        <option value="">Select User</option>
-                        <?php foreach ($users as $user): ?>
-                            <option value="<?= $user['UserID'] ?>">
-                                <?= htmlspecialchars($user['Email']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            <?php else: ?>
-                <!-- Regular user - assigned to themselves -->
-                <input type="hidden" name="user_id" value="<?= $userId ?>">
-            <?php endif; ?>
+            <input type="hidden" name="user_id" value="<?= $userId ?>">
             
             <div class="form-row">
                 <div class="form-group">
@@ -269,7 +239,7 @@ endif;
             <div class="modal-actions">
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i>
-                    <span id="submitButtonText">Add Dependent</span>
+                    <span id="submitButtonText">Add Family Member</span>
                 </button>
                 <button type="button" class="btn btn-secondary" onclick="closeModal('addDependentModal')">
                     Cancel
@@ -397,13 +367,6 @@ endif;
 .no-condition {
     color: #a0aec0;
     font-style: italic;
-}
-
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #4a5568;
 }
 
 /* Action Buttons */
