@@ -1,6 +1,15 @@
 <?php
 session_start();
-require './config.php'; // Include your existing DB configuration
+require_once './config/config.php'; // Updated path to config
+require_once './helpers/auth_helper.php';
+
+// Check authentication and admin role
+requireAuth();
+if (!hasRole('admin')) {
+    $_SESSION['error_message'] = "You don't have permission to upload inventory data.";
+    header('Location: ./pages/dashboard.php');
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
     // Check if file is uploaded without errors
@@ -22,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
     }
     // Prepare default values
     $addedBy = $_SESSION['admin_username'] ?? 'System';
-    $addedOn = (new DateTime())->modify('+8 hours')->format('Y-m-d H:i:s');
+    $addedOn = date('Y-m-d H:i:s'); // Current server time
 
     // Skip the header row
     fgetcsv($file);
@@ -60,10 +69,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
     // echo "Import Complete: $inserted_count rows inserted, $skipped_count rows skipped.";
     $_SESSION['message'] = "Import Complete: $inserted_count rows inserted, $skipped_count rows skipped.";
 } else {
-    echo "Error: No file uploaded.";
-    $_SESSION['message'] = "Error: No file uploaded.";
+    $_SESSION['error_message'] = "Error: No file uploaded.";
 }
-header("Location: ../admin.php");
+header("Location: ./pages/inventory.php");
 exit;
 
 ?>
