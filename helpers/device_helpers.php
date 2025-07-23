@@ -8,7 +8,7 @@ require_once __DIR__ . '/../config/config.php';
 function getAllUsers() {
     $pdo = getDatabase(); 
     try {
-        $stmt = $pdo->prepare('SELECT UserID, Email FROM Users WHERE IsVerified = 1 ORDER BY Email');
+        $stmt = $pdo->prepare('SELECT user_id as UserID, useremail as Email FROM users WHERE is_verified = 1 ORDER BY useremail');
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
@@ -25,20 +25,20 @@ function getUserDependents($userId) {
     try {
         $stmt = $pdo->prepare('
             SELECT 
-                d.DependentID, 
-                d.Firstname, 
-                d.Lastname, 
-                d.Gender,
-                d.DOB,
-                d.Address, 
-                d.PostalCode,
-                d.MedicalCondition,
-                COUNT(e.SerialNoFK) as DeviceCount
-            FROM Dependents d 
-            LEFT JOIN EVA e ON d.DependentID = e.DependentIDFK
-            WHERE d.UserIDFK = ? 
-            GROUP BY d.DependentID
-            ORDER BY d.Firstname, d.Lastname
+                d.dep_id as DependentID, 
+                d.fullname as Firstname, 
+                "" as Lastname, 
+                d.sex as Gender,
+                d.dob as DOB,
+                d.address as Address, 
+                "" as PostalCode,
+                d.med_condition as MedicalCondition,
+                COUNT(e.eva_id) as DeviceCount
+            FROM dependants d 
+            LEFT JOIN eva_info e ON d.dep_id = e.dep_id
+            WHERE d.user_id = ? 
+            GROUP BY d.dep_id
+            ORDER BY d.fullname
         ');
         $stmt->execute([$userId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -56,22 +56,22 @@ function getAllDependents() {
     try {
         $stmt = $pdo->prepare('
             SELECT 
-                d.DependentID, 
-                d.Firstname, 
-                d.Lastname, 
-                d.Gender,
-                d.DOB,
-                d.Address, 
-                d.PostalCode,
-                d.MedicalCondition,
-                d.UserIDFK,
-                u.Email as UserEmail,
-                COUNT(e.SerialNoFK) as DeviceCount
-            FROM Dependents d 
-            LEFT JOIN Users u ON d.UserIDFK = u.UserID 
-            LEFT JOIN EVA e ON d.DependentID = e.DependentIDFK
-            GROUP BY d.DependentID
-            ORDER BY u.Email, d.Firstname, d.Lastname
+                d.dep_id as DependentID, 
+                d.fullname as Firstname, 
+                "" as Lastname, 
+                d.sex as Gender,
+                d.dob as DOB,
+                d.address as Address, 
+                "" as PostalCode,
+                d.med_condition as MedicalCondition,
+                d.user_id as UserIDFK,
+                u.useremail as UserEmail,
+                COUNT(e.eva_id) as DeviceCount
+            FROM dependants d 
+            LEFT JOIN users u ON d.user_id = u.user_id 
+            LEFT JOIN eva_info e ON d.dep_id = e.dep_id
+            GROUP BY d.dep_id
+            ORDER BY u.useremail, d.fullname
         ');
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -89,36 +89,39 @@ function getAllDevicesWithStatus() {
     try {
         $stmt = $pdo->prepare('
             SELECT 
-                e.SerialNoFK as SerialNo,
-                e.EmergencyNo1,
-                e.EmergencyNo2,
-                e.RegisteredDate,
-                e.UserIDFK,
-                e.DependentIDFK,
-                e.DeviceStatus,
-                u.Email as Email,
-                d.Firstname,
-                d.Lastname,
-                d.Address,
-                d.MedicalCondition,
-                i.DeviceType,
+                i.serial_no as SerialNo,
+                e.family_contact1 as EmergencyNo1,
+                e.family_contact2 as EmergencyNo2,
+                e.reg_date as RegisteredDate,
+                e.user_id as UserIDFK,
+                e.dep_id as DependentIDFK,
                 CASE 
-                    WHEN e.LastOnline >= DATE_SUB(NOW(), INTERVAL 5 MINUTE) THEN "online"
+                    WHEN i.is_registered = 1 THEN "Active"
+                    ELSE "Inactive"
+                END as DeviceStatus,
+                u.useremail as Email,
+                d.fullname as Firstname,
+                "" as Lastname,
+                d.address as Address,
+                d.med_condition as MedicalCondition,
+                i.device_type as DeviceType,
+                CASE 
+                    WHEN e.lastseen >= DATE_SUB(NOW(), INTERVAL 5 MINUTE) THEN "online"
                     ELSE "offline"
                 END as status,
-                e.LastOnline,
+                e.lastseen,
                 COALESCE(emergency_count.count, 0) as emergency_count
-            FROM EVA e
-            JOIN Users u ON e.UserIDFK = u.UserID
-            JOIN Dependents d ON e.DependentIDFK = d.DependentID
-            LEFT JOIN Inventory i ON e.SerialNoFK = i.SerialNo
+            FROM eva_info e
+            JOIN users u ON e.user_id = u.user_id
+            JOIN dependants d ON e.dep_id = d.dep_id
+            JOIN inventory i ON e.inventory_id = i.inventory_id
             LEFT JOIN (
-                SELECT SerialNoFK, COUNT(*) as count 
+                SELECT eva_id, COUNT(*) as count 
                 FROM call_histories 
-                WHERE Status = "Active" 
-                GROUP BY SerialNoFK
-            ) emergency_count ON e.SerialNoFK = emergency_count.SerialNoFK
-            ORDER BY e.RegisteredDate DESC
+                WHERE status = "Active" 
+                GROUP BY eva_id
+            ) emergency_count ON e.eva_id = emergency_count.eva_id
+            ORDER BY e.reg_date DESC
         ');
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -136,35 +139,38 @@ function getUserDevicesWithStatus($userId) {
     try {
         $stmt = $pdo->prepare('
             SELECT 
-                e.SerialNoFK as SerialNo,
-                e.EmergencyNo1,
-                e.EmergencyNo2,
-                e.RegisteredDate,
-                e.UserIDFK,
-                e.DependentIDFK,
-                
-                d.Firstname,
-                d.Lastname,
-                d.Address,
-                d.MedicalCondition,
-                i.DeviceType,
+                i.serial_no as SerialNo,
+                e.family_contact1 as EmergencyNo1,
+                e.family_contact2 as EmergencyNo2,
+                e.reg_date as RegisteredDate,
+                e.user_id as UserIDFK,
+                e.dep_id as DependentIDFK,
                 CASE 
-                    WHEN e.LastOnline >= DATE_SUB(NOW(), INTERVAL 5 MINUTE) THEN "online"
+                    WHEN i.is_registered = 1 THEN "Active"
+                    ELSE "Inactive"
+                END as DeviceStatus,
+                d.fullname as Firstname,
+                "" as Lastname,
+                d.address as Address,
+                d.med_condition as MedicalCondition,
+                i.device_type as DeviceType,
+                CASE 
+                    WHEN e.lastseen >= DATE_SUB(NOW(), INTERVAL 5 MINUTE) THEN "online"
                     ELSE "offline"
                 END as status,
-                e.LastOnline,
+                e.lastseen,
                 COALESCE(emergency_count.count, 0) as emergency_count
-            FROM EVA e
-            JOIN Dependents d ON e.DependentIDFK = d.DependentID
-            LEFT JOIN Inventory i ON e.SerialNoFK = i.SerialNo
+            FROM eva_info e
+            JOIN dependants d ON e.dep_id = d.dep_id
+            JOIN inventory i ON e.inventory_id = i.inventory_id
             LEFT JOIN (
-                SELECT EVANo, COUNT(*) as count 
+                SELECT eva_id, COUNT(*) as count 
                 FROM call_histories 
-                WHERE Status = "Active" 
-                GROUP BY EVANo
-            ) emergency_count ON e.EVANo = emergency_count.EVANo
-            WHERE e.UserIDFK = ?
-            ORDER BY e.RegisteredDate DESC
+                WHERE status = "Active" 
+                GROUP BY eva_id
+            ) emergency_count ON e.eva_id = emergency_count.eva_id
+            WHERE e.user_id = ?
+            ORDER BY e.reg_date DESC
         ');
         $stmt->execute([$userId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -181,12 +187,12 @@ function getDeviceStatistics() {
    $pdo = getDatabase(); 
     try {
         // Total devices
-        $stmt = $pdo->prepare('SELECT COUNT(*) FROM EVA');
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM eva_info');
         $stmt->execute();
         $total = $stmt->fetchColumn();
 
         // Online devices (active in last 5 minutes)
-        $stmt = $pdo->prepare('SELECT COUNT(*) FROM EVA WHERE LastOnline >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)');
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM eva_info WHERE lastseen >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)');
         $stmt->execute();
         $online = $stmt->fetchColumn();
 
@@ -194,7 +200,7 @@ function getDeviceStatistics() {
         $offline = $total - $online;
 
         // Active emergencies
-        $stmt = $pdo->prepare('SELECT COUNT(DISTINCT EVANo) FROM call_histories WHERE Status = "Active"');
+        $stmt = $pdo->prepare('SELECT COUNT(DISTINCT eva_id) FROM call_histories WHERE status = "Active"');
         $stmt->execute();
         $emergencies = $stmt->fetchColumn();
 
@@ -222,12 +228,12 @@ function getUserDeviceStatistics($userId) {
    $pdo = getDatabase(); 
     try {
         // Total user devices
-        $stmt = $pdo->prepare('SELECT COUNT(*) FROM EVA WHERE UserIDFK = ?');
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM eva_info WHERE user_id = ?');
         $stmt->execute([$userId]);
         $total = $stmt->fetchColumn();
 
         // User online devices
-        $stmt = $pdo->prepare('SELECT COUNT(*) FROM EVA WHERE UserIDFK = ? AND LastOnline >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)');
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM eva_info WHERE user_id = ? AND lastseen >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)');
         $stmt->execute([$userId]);
         $online = $stmt->fetchColumn();
 
@@ -236,10 +242,10 @@ function getUserDeviceStatistics($userId) {
 
         // User active emergencies
         $stmt = $pdo->prepare('
-            SELECT COUNT(DISTINCT ch.EVANo) 
+            SELECT COUNT(DISTINCT ch.eva_id) 
             FROM call_histories ch 
-            JOIN EVA e ON ch.EVANo = e.EVANo 
-            WHERE e.UserIDFK = ? AND ch.Status = "Active"
+            JOIN eva_info e ON ch.eva_id = e.eva_id 
+            WHERE e.user_id = ? AND ch.status = "Active"
         ');
         $stmt->execute([$userId]);
         $emergencies = $stmt->fetchColumn();
@@ -270,31 +276,40 @@ function getDeviceBySerial($serialNo, $userId = null) {
         $sql = '
             SELECT 
                 e.*,
-                u.Email as UserEmail,
-                d.Firstname,
-                d.Lastname,
-                d.Address,
-                d.MedicalCondition,
-                d.Gender,
-                d.DOB,
-                d.PostalCode,
-                i.DeviceType,
+                i.serial_no,
+                i.device_type as DeviceType,
+                i.is_registered,
+                i.reg_date as RegisteredDate,
+                u.useremail as UserEmail,
+                u.user_id as UserIDFK,
+                d.fullname as Firstname,
+                "" as Lastname,
+                d.address as Address,
+                d.med_condition as MedicalCondition,
+                d.sex as Gender,
+                d.dob as DOB,
+                d.dep_id as DepIDFK,
+                "" as PostalCode,
                 CASE 
-                    WHEN e.LastOnline >= DATE_SUB(NOW(), INTERVAL 5 MINUTE) THEN "online"
+                    WHEN i.is_registered = 1 THEN "Active"
+                    ELSE "Inactive"
+                END as DeviceStatus,
+                CASE 
+                    WHEN e.lastseen >= DATE_SUB(NOW(), INTERVAL 5 MINUTE) THEN "online"
                     ELSE "offline"
                 END as status
-            FROM EVA e
-            JOIN Users u ON e.UserIDFK = u.UserID
-            JOIN Dependents d ON e.DependentIDFK = d.DependentID
-            LEFT JOIN Inventory i ON e.SerialNoFK = i.SerialNo
-            WHERE e.SerialNoFK = ?
+            FROM eva_info e
+            JOIN users u ON e.user_id = u.user_id
+            JOIN dependants d ON e.dep_id = d.dep_id
+            JOIN inventory i ON e.inventory_id = i.inventory_id
+            WHERE i.serial_no = ?
         ';
         
         $params = [$serialNo];
         
         // If userId provided, restrict to user's devices
         if ($userId !== null) {
-            $sql .= ' AND e.UserIDFK = ?';
+            $sql .= ' AND e.user_id = ?';
             $params[] = $userId;
         }
         
@@ -313,7 +328,7 @@ function getDeviceBySerial($serialNo, $userId = null) {
 function validateSerialNumber($serialNo) {
    $pdo = getDatabase(); 
     try {
-        $stmt = $pdo->prepare('SELECT COUNT(*) FROM Inventory WHERE SerialNo = ? AND isRegistered = 0');
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM inventory WHERE serial_no = ? AND is_registered = 0');
         $stmt->execute([$serialNo]);
         return $stmt->fetchColumn() > 0;
     } catch (Exception $e) {
@@ -328,7 +343,7 @@ function validateSerialNumber($serialNo) {
 function isDeviceRegistered($serialNo) {
    $pdo = getDatabase(); 
     try {
-        $stmt = $pdo->prepare('SELECT COUNT(*) FROM EVA WHERE SerialNoFK = ?');
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM eva_info e JOIN inventory i ON e.inventory_id = i.inventory_id WHERE i.serial_no = ?');
         $stmt->execute([$serialNo]);
         return $stmt->fetchColumn() > 0;
     } catch (Exception $e) {
@@ -343,7 +358,7 @@ function isDeviceRegistered($serialNo) {
 function getAvailableInventory() {
    $pdo = getDatabase(); 
     try {
-        $stmt = $pdo->prepare('SELECT SerialNo, DeviceType FROM Inventory WHERE isRegistered = 0 ORDER BY SerialNo');
+        $stmt = $pdo->prepare('SELECT serial_no as SerialNo, device_type as DeviceType FROM inventory WHERE is_registered = 0 ORDER BY serial_no');
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {

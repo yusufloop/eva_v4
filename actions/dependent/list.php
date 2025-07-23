@@ -11,22 +11,22 @@ function getAllDependents() {
     try {
         $stmt = $pdo->prepare('
             SELECT 
-                d.DependentID, 
-                d.Firstname, 
-                d.Lastname, 
-                d.Gender,
-                d.DOB,
-                d.Address, 
-                d.PostalCode,
-                d.MedicalCondition,
-                d.UserIDFK,
-                u.Email as UserEmail,
-                COUNT(e.SerialNoFK) as DeviceCount
-            FROM Dependents d 
-            LEFT JOIN Users u ON d.UserIDFK = u.UserID 
-            LEFT JOIN EVA e ON d.DependentID = e.DependentIDFK
-            GROUP BY d.DependentID
-            ORDER BY u.Email, d.Firstname, d.Lastname
+                d.dep_id as DependentID, 
+                d.fullname as Firstname, 
+                "" as Lastname, 
+                d.sex as Gender,
+                d.dob as DOB,
+                d.address as Address, 
+                "" as PostalCode,
+                d.med_condition as MedicalCondition,
+                d.user_id as UserIDFK,
+                u.email as UserEmail,
+                COUNT(e.eva_id) as DeviceCount
+            FROM dependants d 
+            LEFT JOIN users u ON d.user_id = u.user_id 
+            LEFT JOIN eva_info e ON d.dep_id = e.dep_id
+            GROUP BY d.dep_id
+            ORDER BY u.email, d.fullname
         ');
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -45,21 +45,21 @@ function getUserDependents($userId) {
     try {
         $stmt = $pdo->prepare('
             SELECT 
-                d.DependentID, 
-                d.Firstname, 
-                d.Lastname, 
-                d.Gender,
-                d.DOB,
-                d.Address, 
-                d.PostalCode,
-                d.MedicalCondition,
-                d.UserIDFK,
-                COUNT(e.SerialNoFK) as DeviceCount
-            FROM Dependents d 
-            LEFT JOIN EVA e ON d.DependentID = e.DependentIDFK
-            WHERE d.UserIDFK = ? 
-            GROUP BY d.DependentID
-            ORDER BY d.Firstname, d.Lastname
+                d.dep_id as DependentID, 
+                d.fullname as Firstname, 
+                "" as Lastname, 
+                d.sex as Gender,
+                d.dob as DOB,
+                d.address as Address, 
+                "" as PostalCode,
+                d.med_condition as MedicalCondition,
+                d.user_id as UserIDFK,
+                COUNT(e.eva_id) as DeviceCount
+            FROM dependants d 
+            LEFT JOIN eva_info e ON d.dep_id = e.dep_id
+            WHERE d.user_id = ? 
+            GROUP BY d.dep_id
+            ORDER BY d.fullname
         ');
         $stmt->execute([$userId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -77,17 +77,17 @@ function getDependentById($dependentId, $userId = null) {
     
     try {
         $sql = '
-            SELECT d.*, u.Email as UserEmail 
-            FROM Dependents d 
-            LEFT JOIN Users u ON d.UserIDFK = u.UserID 
-            WHERE d.DependentID = ?
+            SELECT d.*, u.email as UserEmail 
+            FROM dependants d 
+            LEFT JOIN users u ON d.user_id = u.user_id 
+            WHERE d.dep_id = ?
         ';
         
         $params = [$dependentId];
         
         // If userId provided, restrict to user's dependents
         if ($userId !== null) {
-            $sql .= ' AND d.UserIDFK = ?';
+            $sql .= ' AND d.user_id = ?';
             $params[] = $userId;
         }
         

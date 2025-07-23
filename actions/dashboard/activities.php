@@ -11,24 +11,25 @@ function getRecentSystemActivities($limit = 10) {
         $stmt = $pdo->prepare('
             SELECT 
                 "emergency" as type,
-                CONCAT("Emergency call from ", d.Firstname, " ", d.Lastname) as title,
-                CONCAT("Location: ", d.Address) as description,
-                ch.Datetime as created_at
-            FROM Call_Histories ch
-            INNER JOIN EVA e ON ch.SerialNoFK = e.SerialNoFK
-            INNER JOIN Dependents d ON e.DependentIDFK = d.DependentID
-            WHERE ch.Status IN ("Unanswered", "Resolved")
+                CONCAT("Emergency call from ", d.fullname) as title,
+                CONCAT("Location: ", d.address) as description,
+                ch.call_date as created_at
+            FROM call_histories ch
+            INNER JOIN eva_info e ON ch.eva_id = e.eva_id
+            INNER JOIN dependants d ON e.dep_id = d.dep_id
+            WHERE ch.status IN ("Unanswered", "Resolved")
             
             UNION ALL
             
             SELECT 
                 "device" as type,
-                CONCAT("New device registered: ", e.SerialNoFK) as title,
-                CONCAT("User: ", u.Email) as description,
-                e.RegisteredDate as created_at
-            FROM EVA e
-            INNER JOIN Users u ON e.UserIDFK = u.UserID
-            WHERE DATE(e.RegisteredDate) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                CONCAT("New device registered: ", i.serial_no) as title,
+                CONCAT("User: ", u.email) as description,
+                e.reg_date as created_at
+            FROM eva_info e
+            INNER JOIN users u ON e.user_id = u.user_id
+            INNER JOIN inventory i ON e.inventory_id = i.inventory_id
+            WHERE DATE(e.reg_date) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
             
             ORDER BY created_at DESC
             LIMIT ?
@@ -52,24 +53,26 @@ function getUserRecentActivities($userId, $limit = 5) {
         $stmt = $pdo->prepare('
             SELECT 
                 "emergency" as type,
-                CONCAT("Emergency call from ", d.Firstname, " ", d.Lastname) as title,
-                CONCAT("Device: ", e.SerialNoFK) as description,
-                ch.Datetime as created_at
-            FROM Call_Histories ch
-            INNER JOIN EVA e ON ch.SerialNoFK = e.SerialNoFK
-            INNER JOIN Dependents d ON e.DependentIDFK = d.DependentID
-            WHERE e.UserIDFK = ?
+                CONCAT("Emergency call from ", d.fullname) as title,
+                CONCAT("Device: ", i.serial_no) as description,
+                ch.call_date as created_at
+            FROM call_histories ch
+            INNER JOIN eva_info e ON ch.eva_id = e.eva_id
+            INNER JOIN dependants d ON e.dep_id = d.dep_id
+            INNER JOIN inventory i ON e.inventory_id = i.inventory_id
+            WHERE e.user_id = ?
             
             UNION ALL
             
             SELECT 
                 "device" as type,
-                CONCAT("Device registered: ", e.SerialNoFK) as title,
-                CONCAT("Assigned to: ", d.Firstname, " ", d.Lastname) as description,
-                e.RegisteredDate as created_at
-            FROM EVA e
-            INNER JOIN Dependents d ON e.DependentIDFK = d.DependentID
-            WHERE e.UserIDFK = ? AND DATE(e.RegisteredDate) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                CONCAT("Device registered: ", i.serial_no) as title,
+                CONCAT("Assigned to: ", d.fullname) as description,
+                e.reg_date as created_at
+            FROM eva_info e
+            INNER JOIN dependants d ON e.dep_id = d.dep_id
+            INNER JOIN inventory i ON e.inventory_id = i.inventory_id
+            WHERE e.user_id = ? AND DATE(e.reg_date) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
             
             ORDER BY created_at DESC
             LIMIT ?

@@ -7,6 +7,10 @@ require_once '../helpers/auth_helper.php';
 // Check authentication
 requireAuth();
 
+// Get current user info
+$userId = getCurrentUserId();
+$isAdmin = hasRole('admin');
+
 // Page assets
 $additionalCSS = [
     '../assets/css/dashboard.css',

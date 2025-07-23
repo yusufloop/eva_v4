@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo = getDatabase();
         
         // Check if serial number already exists
-        $stmt = $pdo->prepare('SELECT COUNT(*) FROM Inventory WHERE SerialNo = ?');
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM inventory WHERE serial_no = ?');
         $stmt->execute([$serialNo]);
         $exists = $stmt->fetchColumn();
         
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Add new device to inventory
-        $stmt = $pdo->prepare('INSERT INTO Inventory (SerialNo, DeviceType, AddedBy, AddedOn, isRegistered) VALUES (?, ?, ?, NOW(), 0)');
+        $stmt = $pdo->prepare('INSERT INTO inventory (serial_no, device_type, add_by, add_on, is_registered) VALUES (?, ?, ?, NOW(), 0)');
         $result = $stmt->execute([$serialNo, $deviceType, $addedBy]);
         
         if ($result) {

@@ -268,3 +268,6 @@ sess_*
 # PID files
 *.pid
 
+
+.claude
+

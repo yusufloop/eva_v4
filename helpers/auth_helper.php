@@ -65,7 +65,7 @@ function isUser() {
  */
 function getCurrentUserId() {
    
-    return $_SESSION['UserID'] ?? null;
+    return $_SESSION['user_id'] ?? $_SESSION['UserID'] ?? null;
 }
 
 /**
@@ -82,19 +82,22 @@ function getCurrentUserEmail() {
  * Login user and set session data
  */
 function loginUser($user) {
-    // Set common session data
-    $_SESSION['UserID'] = $user['UserID'];
+    // Set common session data for new schema
+    $_SESSION['user_id'] = $user['user_id'];
+    $_SESSION['UserID'] = $user['user_id']; // backward compatibility
     $_SESSION['user_data'] = $user;
     
     // Check if user is admin
-    if ($user['IsAdmin'] == 1 || $user['IsAdmin'] === "Yes"):
+    if ($user['is_admin'] == 1 || $user['is_admin'] === "Yes"):
         // Admin login
-        $_SESSION['admin_username'] = $user['Email'];
-        $_SESSION['IsAdmin'] = $user['IsAdmin'];
+        $_SESSION['admin_username'] = $user['useremail'];
+        $_SESSION['Email'] = $user['useremail']; // backward compatibility
+        $_SESSION['IsAdmin'] = $user['is_admin'];
         return 'admin';
     else:
         // Regular user login
-        $_SESSION['username'] = $user['Email'];
+        $_SESSION['username'] = $user['useremail'];
+        $_SESSION['Email'] = $user['useremail']; // backward compatibility
         return 'user';
     endif;
 }
@@ -194,18 +197,18 @@ function authenticateUser($email, $password) {
     $pdo = getDatabase();
     
     try {
-        // Check for user from database
-        $stmt = $pdo->prepare('SELECT UserID, Email, Password, IsAdmin, IsVerified FROM Users WHERE Email = ?');
+        // Check for user from database using new schema
+        $stmt = $pdo->prepare('SELECT user_id, useremail, password, is_admin, is_verified FROM users WHERE useremail = ?');
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         
         // Check if user exists and password is correct
-        if (!$user || !password_verify($password, $user['Password'])):
+        if (!$user || !password_verify($password, $user['password'])):
             throw new Exception('Invalid credentials');
         endif;
         
         // Check if email is verified
-        if ($user['IsVerified'] == 0):
+        if ($user['is_verified'] == 0):
             throw new Exception('Please verify your email before logging in');
         endif;
         

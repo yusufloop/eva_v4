@@ -8,30 +8,31 @@ function getAllCallHistories() {
     try {
         $stmt = $pdo->prepare('
             SELECT 
-                ch.RecordID, 
-                ch.SerialNoFK, 
-                ch.Datetime, 
-                ch.Number,
-                ch.Direction,
-                ch.Status,
-                ch.Duration,
-                d.Address, 
-                d.Firstname,
-                d.Lastname,
-                d.Gender,
-                d.DOB,
-                d.MedicalCondition,
-                u.Email as UserEmail,
-                e.EmergencyNo1,
-                e.EmergencyNo2,
-                e.RegisteredDate,
-                e.DeviceStatus,
-                e.LastOnline
-            FROM Call_Histories ch 
-            LEFT JOIN EVA e ON ch.SerialNoFK = e.SerialNoFK
-            LEFT JOIN Dependents d ON e.DependentIDFK = d.DependentID
-            LEFT JOIN Users u ON e.UserIDFK = u.UserID 
-            ORDER BY ch.Datetime DESC
+                ch.call_id as RecordID, 
+                i.serial_no as SerialNoFK, 
+                ch.call_date as Datetime, 
+                ch.number as Number,
+                ch.direction as Direction,
+                ch.status as Status,
+                ch.duration as Duration,
+                d.address as Address, 
+                d.fullname as Firstname,
+                "" as Lastname,
+                d.sex as Gender,
+                d.dob as DOB,
+                d.med_condition as MedicalCondition,
+                u.email as UserEmail,
+                e.family_contact1 as EmergencyNo1,
+                e.family_contact2 as EmergencyNo2,
+                e.reg_date as RegisteredDate,
+                CASE WHEN i.is_registered = 1 THEN "Active" ELSE "Inactive" END as DeviceStatus,
+                e.lastseen as LastOnline
+            FROM call_histories ch 
+            LEFT JOIN eva_info e ON ch.eva_id = e.eva_id
+            LEFT JOIN dependants d ON e.dep_id = d.dep_id
+            LEFT JOIN users u ON e.user_id = u.user_id 
+            LEFT JOIN inventory i ON e.inventory_id = i.inventory_id
+            ORDER BY ch.call_date DESC
         ');
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -47,31 +48,32 @@ function getUserCallHistories($userId) {
     try {
         $stmt = $pdo->prepare('
             SELECT 
-                ch.RecordID, 
-                ch.SerialNoFK, 
-                ch.Datetime, 
-                ch.Number,
-                ch.Direction,
-                ch.Status,
-                ch.Duration,
-                d.Address, 
-                d.Firstname,
-                d.Lastname,
-                d.Gender,
-                d.DOB,
-                d.MedicalCondition,
-                u.Email as UserEmail,
-                e.EmergencyNo1,
-                e.EmergencyNo2,
-                e.RegisteredDate,
-                e.DeviceStatus,
-                e.LastOnline
-            FROM Call_Histories ch 
-            INNER JOIN EVA e ON ch.SerialNoFK = e.SerialNoFK
-            INNER JOIN Dependents d ON e.DependentIDFK = d.DependentID
-            INNER JOIN Users u ON e.UserIDFK = u.UserID 
-            WHERE u.UserID = ?
-            ORDER BY ch.Datetime DESC
+                ch.call_id as RecordID, 
+                i.serial_no as SerialNoFK, 
+                ch.call_date as Datetime, 
+                ch.number as Number,
+                ch.direction as Direction,
+                ch.status as Status,
+                ch.duration as Duration,
+                d.address as Address, 
+                d.fullname as Firstname,
+                "" as Lastname,
+                d.sex as Gender,
+                d.dob as DOB,
+                d.med_condition as MedicalCondition,
+                u.email as UserEmail,
+                e.family_contact1 as EmergencyNo1,
+                e.family_contact2 as EmergencyNo2,
+                e.reg_date as RegisteredDate,
+                CASE WHEN i.is_registered = 1 THEN "Active" ELSE "Inactive" END as DeviceStatus,
+                e.lastseen as LastOnline
+            FROM call_histories ch 
+            INNER JOIN eva_info e ON ch.eva_id = e.eva_id
+            INNER JOIN dependants d ON e.dep_id = d.dep_id
+            INNER JOIN users u ON e.user_id = u.user_id 
+            INNER JOIN inventory i ON e.inventory_id = i.inventory_id
+            WHERE u.user_id = ?
+            ORDER BY ch.call_date DESC
         ');
         $stmt->execute([$userId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -87,29 +89,30 @@ function getFilteredCallHistories($filters = []) {
     try {
         $baseQuery = '
             SELECT 
-                ch.RecordID, 
-                ch.SerialNoFK, 
-                ch.Datetime, 
-                ch.Number,
-                ch.Direction,
-                ch.Status,
-                ch.Duration,
-                d.Address, 
-                d.Firstname,
-                d.Lastname,
-                d.Gender,
-                d.DOB,
-                d.MedicalCondition,
-                u.Email as UserEmail,
-                e.EmergencyNo1,
-                e.EmergencyNo2,
-                e.RegisteredDate,
-                e.DeviceStatus,
-                e.LastOnline
-            FROM Call_Histories ch 
-            LEFT JOIN EVA e ON ch.SerialNoFK = e.SerialNoFK
-            LEFT JOIN Dependents d ON e.DependentIDFK = d.DependentID
-            LEFT JOIN Users u ON e.UserIDFK = u.UserID 
+                ch.call_id as RecordID, 
+                i.serial_no as SerialNoFK, 
+                ch.call_date as Datetime, 
+                ch.number as Number,
+                ch.direction as Direction,
+                ch.status as Status,
+                ch.duration as Duration,
+                d.address as Address, 
+                d.fullname as Firstname,
+                "" as Lastname,
+                d.sex as Gender,
+                d.dob as DOB,
+                d.med_condition as MedicalCondition,
+                u.email as UserEmail,
+                e.family_contact1 as EmergencyNo1,
+                e.family_contact2 as EmergencyNo2,
+                e.reg_date as RegisteredDate,
+                CASE WHEN i.is_registered = 1 THEN "Active" ELSE "Inactive" END as DeviceStatus,
+                e.lastseen as LastOnline
+            FROM call_histories ch 
+            LEFT JOIN eva_info e ON ch.eva_id = e.eva_id
+            LEFT JOIN dependants d ON e.dep_id = d.dep_id
+            LEFT JOIN users u ON e.user_id = u.user_id 
+            LEFT JOIN inventory i ON e.inventory_id = i.inventory_id
         ';
         
         $whereConditions = [];
@@ -117,32 +120,32 @@ function getFilteredCallHistories($filters = []) {
         
         // Add filters
         if (!empty($filters['status'])) {
-            $whereConditions[] = 'ch.Status = ?';
+            $whereConditions[] = 'ch.status = ?';
             $params[] = $filters['status'];
         }
         
         if (!empty($filters['direction'])) {
-            $whereConditions[] = 'ch.Direction = ?';
+            $whereConditions[] = 'ch.direction = ?';
             $params[] = $filters['direction'];
         }
         
         if (!empty($filters['user_id'])) {
-            $whereConditions[] = 'u.UserID = ?';
+            $whereConditions[] = 'u.user_id = ?';
             $params[] = $filters['user_id'];
         }
         
         if (!empty($filters['serial_no'])) {
-            $whereConditions[] = 'ch.SerialNoFK = ?';
+            $whereConditions[] = 'i.serial_no = ?';
             $params[] = $filters['serial_no'];
         }
         
         if (!empty($filters['date_from'])) {
-            $whereConditions[] = 'DATE(ch.Datetime) >= ?';
+            $whereConditions[] = 'DATE(ch.call_date) >= ?';
             $params[] = $filters['date_from'];
         }
         
         if (!empty($filters['date_to'])) {
-            $whereConditions[] = 'DATE(ch.Datetime) <= ?';
+            $whereConditions[] = 'DATE(ch.call_date) <= ?';
             $params[] = $filters['date_to'];
         }
         
@@ -151,7 +154,7 @@ function getFilteredCallHistories($filters = []) {
             $baseQuery .= ' WHERE ' . implode(' AND ', $whereConditions);
         }
         
-        $baseQuery .= ' ORDER BY ch.Datetime DESC';
+        $baseQuery .= ' ORDER BY ch.call_date DESC';
         
         // Add limit if specified
         if (!empty($filters['limit'])) {
@@ -175,19 +178,19 @@ function getCallHistoryStats($userId = null) {
         $baseQuery = '
             SELECT 
                 COUNT(*) as total_calls,
-                SUM(CASE WHEN ch.Status = "Unanswered" THEN 1 ELSE 0 END) as unanswered_calls,
-                SUM(CASE WHEN ch.Status = "Active" THEN 1 ELSE 0 END) as active_calls,
-                SUM(CASE WHEN ch.Status = "Resolved" THEN 1 ELSE 0 END) as resolved_calls,
-                SUM(CASE WHEN ch.Direction = "Incoming" THEN 1 ELSE 0 END) as incoming_calls,
-                SUM(CASE WHEN ch.Direction = "Outgoing" THEN 1 ELSE 0 END) as outgoing_calls
-            FROM Call_Histories ch 
-            LEFT JOIN EVA e ON ch.SerialNoFK = e.SerialNoFK
-            LEFT JOIN Users u ON e.UserIDFK = u.UserID 
+                SUM(CASE WHEN ch.status = "Unanswered" THEN 1 ELSE 0 END) as unanswered_calls,
+                SUM(CASE WHEN ch.status = "Active" THEN 1 ELSE 0 END) as active_calls,
+                SUM(CASE WHEN ch.status = "Resolved" THEN 1 ELSE 0 END) as resolved_calls,
+                SUM(CASE WHEN ch.direction = "Incoming" THEN 1 ELSE 0 END) as incoming_calls,
+                SUM(CASE WHEN ch.direction = "Outgoing" THEN 1 ELSE 0 END) as outgoing_calls
+            FROM call_histories ch 
+            LEFT JOIN eva_info e ON ch.eva_id = e.eva_id
+            LEFT JOIN users u ON e.user_id = u.user_id 
         ';
         
         $params = [];
         if ($userId !== null) {
-            $baseQuery .= ' WHERE u.UserID = ?';
+            $baseQuery .= ' WHERE u.user_id = ?';
             $params[] = $userId;
         }
         
@@ -213,30 +216,31 @@ function getCallHistoryById($recordId) {
     try {
         $stmt = $pdo->prepare('
             SELECT 
-                ch.RecordID, 
-                ch.SerialNoFK, 
-                ch.Datetime, 
-                ch.Number,
-                ch.Direction,
-                ch.Status,
-                ch.Duration,
-                d.Address, 
-                d.Firstname,
-                d.Lastname,
-                d.Gender,
-                d.DOB,
-                d.MedicalCondition,
-                u.Email as UserEmail,
-                e.EmergencyNo1,
-                e.EmergencyNo2,
-                e.RegisteredDate,
-                e.DeviceStatus,
-                e.LastOnline
-            FROM Call_Histories ch 
-            LEFT JOIN EVA e ON ch.SerialNoFK = e.SerialNoFK
-            LEFT JOIN Dependents d ON e.DependentIDFK = d.DependentID
-            LEFT JOIN Users u ON e.UserIDFK = u.UserID 
-            WHERE ch.RecordID = ?
+                ch.call_id as RecordID, 
+                i.serial_no as SerialNoFK, 
+                ch.call_date as Datetime, 
+                ch.number as Number,
+                ch.direction as Direction,
+                ch.status as Status,
+                ch.duration as Duration,
+                d.address as Address, 
+                d.fullname as Firstname,
+                "" as Lastname,
+                d.sex as Gender,
+                d.dob as DOB,
+                d.med_condition as MedicalCondition,
+                u.email as UserEmail,
+                e.family_contact1 as EmergencyNo1,
+                e.family_contact2 as EmergencyNo2,
+                e.reg_date as RegisteredDate,
+                CASE WHEN i.is_registered = 1 THEN "Active" ELSE "Inactive" END as DeviceStatus,
+                e.lastseen as LastOnline
+            FROM call_histories ch 
+            LEFT JOIN eva_info e ON ch.eva_id = e.eva_id
+            LEFT JOIN dependants d ON e.dep_id = d.dep_id
+            LEFT JOIN users u ON e.user_id = u.user_id 
+            LEFT JOIN inventory i ON e.inventory_id = i.inventory_id
+            WHERE ch.call_id = ?
         ');
         $stmt->execute([$recordId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -250,7 +254,7 @@ function getCallHistoryById($recordId) {
 function updateCallStatus($recordId, $newStatus) {
     $pdo = getDatabase(); 
     try {
-        $stmt = $pdo->prepare('UPDATE Call_Histories SET Status = ? WHERE RecordID = ?');
+        $stmt = $pdo->prepare('UPDATE call_histories SET status = ? WHERE call_id = ?');
         $result = $stmt->execute([$newStatus, $recordId]);
         return $result;
     } catch (Exception $e) {
@@ -263,7 +267,7 @@ function updateCallStatus($recordId, $newStatus) {
 function deleteCallHistory($recordId) {
     $pdo = getDatabase(); 
     try {
-        $stmt = $pdo->prepare('DELETE FROM Call_Histories WHERE RecordID = ?');
+        $stmt = $pdo->prepare('DELETE FROM call_histories WHERE call_id = ?');
         $result = $stmt->execute([$recordId]);
         return $result;
     } catch (Exception $e) {

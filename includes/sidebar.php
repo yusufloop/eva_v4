@@ -17,26 +17,30 @@
         <!-- Navigation Menu -->
         <div class="sidebar-content">
             <nav class="sidebar-nav">
-                <a href="../pages/dashboard.php" class="nav-item <?php echo ($currentPage ?? '') == 'dashboard' ? 'active' : ''; ?>">
+                <a href="/pages/dashboard.php" class="nav-item <?php echo ($currentPage ?? '') == 'dashboard' ? 'active' : ''; ?>">
                     <i class="bi bi-speedometer2"></i>
                     <span>Dashboard</span>
                 </a>
                 
           
                 
-                <a href="../pages/dependents.php" class="nav-item <?php echo ($currentPage ?? '') == 'family_members' ? 'active' : ''; ?>">
+                <a href="/pages/dependents.php" class="nav-item <?php echo ($currentPage ?? '') == 'family_members' ? 'active' : ''; ?>">
                     <i class="bi bi-people"></i>
                     <span>Dependents</span>
                 </a>
                 
-                <a href="../pages/call_logs.php" class="nav-item <?php echo ($currentPage ?? '') == 'call_logs' ? 'active' : ''; ?>">
+                <a href="/pages/call_logs.php" class="nav-item <?php echo ($currentPage ?? '') == 'call_logs' ? 'active' : ''; ?>">
                     <i class="bi bi-telephone"></i>
                     <span>Call Logs</span>
                 </a>
                 
-                <a href="../pages/alert_history.php" class="nav-item <?php echo ($currentPage ?? '') == 'alert_history' ? 'active' : ''; ?>">
+                <a href="/pages/alert_history.php" class="nav-item <?php echo ($currentPage ?? '') == 'alert_history' ? 'active' : ''; ?>">
                     <i class="bi bi-exclamation-triangle"></i>
                     <span>Alert History</span>
+                </a>
+                <a href="/pages/inventory.php" class="nav-item <?php echo ($currentPage ?? '') == 'system_activities' ? 'active' : ''; ?>">
+                    <i class="bi bi-list"></i>
+                    <span>inventory</span>
                 </a>
                 
                 <!-- <a href="../pages/settings.php" class="nav-item <?php echo ($currentPage ?? '') == 'settings' ? 'active' : ''; ?>">
@@ -49,10 +53,11 @@
                     <span>Profile</span>
                 </a> -->
                 
-                <a href="../pages/system_activities.php" class="nav-item <?php echo ($currentPage ?? '') == 'system_activities' ? 'active' : ''; ?>">
+                <a href="/pages/system_activities.php" class="nav-item <?php echo ($currentPage ?? '') == 'system_activities' ? 'active' : ''; ?>">
                     <i class="bi bi-activity"></i>
                     <span>System Activities</span>
                 </a>
+
             </nav>
             
             <!-- User Info Section -->
@@ -62,7 +67,7 @@
                         <i class="bi bi-person-circle"></i>
                     </div>
                     <div class="user-details">
-                        <span class="user-name"><?php echo htmlspecialchars($username); ?></span>
+                        <span class="user-name"><?php echo htmlspecialchars(getCurrentUserEmail() ?? 'Admin'); ?></span>
                         <span class="user-role">Administrator</span>
                     </div>
                 </div>
@@ -423,7 +428,7 @@
                         <i class="bi bi-person-circle"></i>
                     </div>
                     <div class="user-details">
-                        <span class="user-name"><?php echo htmlspecialchars($currentUser); ?></span>
+                        <span class="user-name"><?php echo htmlspecialchars(getCurrentUserEmail() ?? 'User'); ?></span>
                         <span class="user-role">User</span>
                     </div>
                 </div>

@@ -17,17 +17,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['serialNo'])) {
         $pdo = getDatabase();
         
         // Check if device is registered to any user
-        $stmt = $pdo->prepare('SELECT COUNT(*) FROM EVA WHERE SerialNoFK = ?');
+        $stmt = $pdo->prepare('SELECT is_registered FROM inventory WHERE serial_no = ?');
         $stmt->execute([$serialNo]);
         $isRegistered = $stmt->fetchColumn();
         
-        if ($isRegistered) {
+        if ($isRegistered == 1) {
             echo json_encode(['success' => false, 'message' => "Cannot delete device. It is currently registered to a user."]);
             exit;
         }
         
         // Delete device from inventory
-        $stmt = $pdo->prepare('DELETE FROM Inventory WHERE SerialNo = ?');
+        $stmt = $pdo->prepare('DELETE FROM inventory WHERE serial_no = ?');
         $result = $stmt->execute([$serialNo]);
         
         if ($result) {

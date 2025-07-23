@@ -17,7 +17,7 @@ if (isset($_GET['serialNo'])) {
         $pdo = getDatabase();
         
         // Get device from inventory
-        $stmt = $pdo->prepare('SELECT * FROM Inventory WHERE SerialNo = ?');
+        $stmt = $pdo->prepare('SELECT serial_no as SerialNo, device_type as DeviceType, add_by as AddedBy, add_on as AddedOn, is_registered as isRegistered FROM inventory WHERE serial_no = ?');
         $stmt->execute([$serialNo]);
         $device = $stmt->fetch(PDO::FETCH_ASSOC);
         

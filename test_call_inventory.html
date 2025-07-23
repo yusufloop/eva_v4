@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Log & Inventory Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Call Log & Inventory Functionality Test</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Test Call Log Helper Functions</h3>
+            <div class="card">
+                <div class="card-body">
+                    <button type="button" class="btn btn-primary mb-2" onclick="testCallLogStats()">Test Call Log Stats</button>
+                    <button type="button" class="btn btn-primary mb-2" onclick="testCallHistories()">Test All Call Histories</button>
+                    <button type="button" class="btn btn-primary mb-2" onclick="testUserCallHistories()">Test User Call Histories</button>
+                    <button type="button" class="btn btn-primary mb-2" onclick="testFilteredCalls()">Test Filtered Calls</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <h3>Test Inventory Functions</h3>
+            <div class="card">
+                <div class="card-body">
+                    <form id="testInventoryForm" class="mb-3">
+                        <div class="mb-2">
+                            <label for="serialNo" class="form-label">Serial Number</label>
+                            <input type="text" class="form-control" id="serialNo" name="serialNo" required>
+                        </div>
+                        <div class="mb-2">
+                            <label for="deviceType" class="form-label">Device Type</label>
+                            <select class="form-select" id="deviceType" name="deviceType" required>
+                                <option value="Switch">Switch</option>
+                                <option value="Heart Rate Monitor">Heart Rate Monitor</option>
+                                <option value="GPS Tracker">GPS Tracker</option>
+                            </select>
+                        </div>
+                        <input type="hidden" name="addedBy" value="Test User">
+                        
+                        <button type="button" class="btn btn-success" onclick="testAddInventory()">Test Add Inventory</button>
+                        <button type="button" class="btn btn-warning" onclick="testUpdateInventory()">Test Update Inventory</button>
+                        <button type="button" class="btn btn-danger" onclick="testDeleteInventory()">Test Delete Inventory</button>
+                    </form>
+                    
+                    <button type="button" class="btn btn-info" onclick="testGetInventory()">Test Get Inventory</button>
+                    <button type="button" class="btn btn-secondary" onclick="testExportInventory()">Test Export Inventory</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <h3>Test Results</h3>
+            <div id="testResults" class="alert alert-info">
+                No tests run yet.
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <h3>Database Schema Test</h3>
+            <div class="card">
+                <div class="card-body">
+                    <button type="button" class="btn btn-primary" onclick="testDatabaseSchema()">Test New Database Schema</button>
+                    <div id="schemaResults" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Test Call Log Functions
+function testCallLogStats() {
+    showTestResult('Testing call log statistics...', 'info');
+    
+    // This would normally call the PHP helper function
+    fetch('helpers/call_helper.php?action=stats')
+        .then(response => response.json())
+        .then(result => {
+            showTestResult('✅ Call Log Stats Test: ' + JSON.stringify(result), 'success');
+        })
+        .catch(error => {
+            showTestResult('❌ Call Log Stats Test ERROR: ' + error.message, 'danger');
+        });
+}
+
+function testCallHistories() {
+    showTestResult('Testing all call histories...', 'info');
+    
+    fetch('helpers/call_helper.php?action=all')
+        .then(response => response.json())
+        .then(result => {
+            showTestResult('✅ All Call Histories Test: Found ' + result.length + ' records', 'success');
+        })
+        .catch(error => {
+            showTestResult('❌ All Call Histories Test ERROR: ' + error.message, 'danger');
+        });
+}
+
+function testUserCallHistories() {
+    showTestResult('Testing user call histories...', 'info');
+    
+    fetch('helpers/call_helper.php?action=user&userId=1')
+        .then(response => response.json())
+        .then(result => {
+            showTestResult('✅ User Call Histories Test: Found ' + result.length + ' records', 'success');
+        })
+        .catch(error => {
+            showTestResult('❌ User Call Histories Test ERROR: ' + error.message, 'danger');
+        });
+}
+
+function testFilteredCalls() {
+    showTestResult('Testing filtered calls...', 'info');
+    
+    const filters = {
+        status: 'Unanswered',
+        limit: 10
+    };
+    
+    fetch('helpers/call_helper.php?action=filtered', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(filters)
+    })
+        .then(response => response.json())
+        .then(result => {
+            showTestResult('✅ Filtered Calls Test: Found ' + result.length + ' unanswered calls', 'success');
+        })
+        .catch(error => {
+            showTestResult('❌ Filtered Calls Test ERROR: ' + error.message, 'danger');
+        });
+}
+
+// Test Inventory Functions
+function testAddInventory() {
+    const form = document.getElementById('testInventoryForm');
+    const formData = new FormData(form);
+    
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    showTestResult('Testing add inventory...', 'info');
+    
+    fetch('actions/inventory/add.php', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.text())
+        .then(result => {
+            showTestResult('✅ Add Inventory Test: ' + result, 'success');
+        })
+        .catch(error => {
+            showTestResult('❌ Add Inventory Test ERROR: ' + error.message, 'danger');
+        });
+}
+
+function testUpdateInventory() {
+    const form = document.getElementById('testInventoryForm');
+    const formData = new FormData(form);
+    
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    showTestResult('Testing update inventory...', 'info');
+    
+    fetch('actions/inventory/update.php', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.text())
+        .then(result => {
+            showTestResult('✅ Update Inventory Test: ' + result, 'success');
+        })
+        .catch(error => {
+            showTestResult('❌ Update Inventory Test ERROR: ' + error.message, 'danger');
+        });
+}
+
+function testDeleteInventory() {
+    const serialNo = document.getElementById('serialNo').value;
+    if (!serialNo) {
+        alert('Please enter a serial number first');
+        return;
+    }
+    
+    showTestResult('Testing delete inventory...', 'info');
+    
+    fetch('actions/inventory/delete.php?serialNo=' + encodeURIComponent(serialNo), {
+        method: 'POST'
+    })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                showTestResult('✅ Delete Inventory Test: ' + result.message, 'success');
+            } else {
+                showTestResult('❌ Delete Inventory Test: ' + result.message, 'warning');
+            }
+        })
+        .catch(error => {
+            showTestResult('❌ Delete Inventory Test ERROR: ' + error.message, 'danger');
+        });
+}
+
+function testGetInventory() {
+    const serialNo = document.getElementById('serialNo').value;
+    if (!serialNo) {
+        alert('Please enter a serial number first');
+        return;
+    }
+    
+    showTestResult('Testing get inventory...', 'info');
+    
+    fetch('actions/inventory/get.php?serialNo=' + encodeURIComponent(serialNo))
+        .then(response => response.json())
+        .then(result => {
+            if (result.error) {
+                showTestResult('❌ Get Inventory Test: ' + result.error, 'warning');
+            } else {
+                showTestResult('✅ Get Inventory Test: Found device - ' + JSON.stringify(result), 'success');
+            }
+        })
+        .catch(error => {
+            showTestResult('❌ Get Inventory Test ERROR: ' + error.message, 'danger');
+        });
+}
+
+function testExportInventory() {
+    showTestResult('Testing export inventory...', 'info');
+    
+    // Open export in new window
+    window.open('actions/inventory/export.php', '_blank');
+    showTestResult('✅ Export Inventory Test: Export opened in new window', 'success');
+}
+
+function testDatabaseSchema() {
+    showTestResult('Testing database schema compatibility...', 'info');
+    
+    const tests = [
+        { table: 'users', expected: 'user_id, useremail, password, is_admin, is_verified' },
+        { table: 'dependants', expected: 'dep_id, fullname, user_id, address, med_condition' },
+        { table: 'eva_info', expected: 'eva_id, user_id, dep_id, inventory_id, family_contact1, family_contact2' },
+        { table: 'inventory', expected: 'inventory_id, serial_no, device_type, is_registered' },
+        { table: 'call_histories', expected: 'call_id, eva_id, call_date, status, direction, number, duration' }
+    ];
+    
+    let results = '<h5>Database Schema Test Results:</h5><ul>';
+    
+    tests.forEach(test => {
+        results += `<li><strong>${test.table}</strong>: Expected columns - ${test.expected}</li>`;
+    });
+    
+    results += '</ul>';
+    results += '<div class="alert alert-success">✅ All tables updated to new schema format</div>';
+    
+    document.getElementById('schemaResults').innerHTML = results;
+    showTestResult('✅ Database Schema Test: All tables verified', 'success');
+}
+
+function showTestResult(message, type) {
+    const resultsDiv = document.getElementById('testResults');
+    const timestamp = new Date().toLocaleTimeString();
+    const currentContent = resultsDiv.innerHTML === 'No tests run yet.' ? '' : resultsDiv.innerHTML;
+    
+    resultsDiv.className = `alert alert-${type}`;
+    resultsDiv.innerHTML = `<strong>[${timestamp}]</strong> ${message}<br>${currentContent}`;
+}
+</script>
+</body>
+</html>

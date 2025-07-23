@@ -1,0 +1,26 @@
+RewriteEngine On
+
+# Redirect device URLs to appropriate pages
+# /device/view/{serial_no} -> /pages/device_view.php?serial_no={serial_no}
+RewriteRule ^device/view/([^/]+)/?$ pages/device_view.php?serial_no=$1 [L,QSA]
+
+# /device/edit/{serial_no} -> /pages/device_edit.php?serial_no={serial_no}
+RewriteRule ^device/edit/([^/]+)/?$ pages/device_edit.php?serial_no=$1 [L,QSA]
+
+# /device/delete/{serial_no} -> /actions/device/index.php?action=delete&serial_no={serial_no}
+RewriteRule ^device/delete/([^/]+)/?$ actions/device/index.php?action=delete&serial_no=$1 [L,QSA]
+
+# Redirect dashboard
+RewriteRule ^dashboard/?$ pages/dashboard.php [L,QSA]
+
+# Redirect inventory
+RewriteRule ^inventory/?$ pages/inventory.php [L,QSA]
+
+# Redirect call logs
+RewriteRule ^call-logs/?$ pages/call_logs.php [L,QSA]
+
+# Prevent direct access to certain directories
+RewriteRule ^(config|helpers)/ - [F,L]
+
+# Handle missing files - redirect to appropriate pages
+ErrorDocument 404 //pages/404.php

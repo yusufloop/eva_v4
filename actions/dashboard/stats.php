@@ -12,9 +12,9 @@ function getAdminDashboardData() {
         $stmt = $pdo->prepare('
             SELECT 
                 COUNT(*) as total_devices,
-                SUM(CASE WHEN DeviceStatus = "Active" THEN 1 ELSE 0 END) as online_devices,
-                SUM(CASE WHEN DeviceStatus = "Inactive" THEN 1 ELSE 0 END) as offline_devices
-            FROM EVA
+                SUM(CASE WHEN e.lastseen >= DATE_SUB(NOW(), INTERVAL 5 MINUTE) THEN 1 ELSE 0 END) as online_devices,
+                SUM(CASE WHEN e.lastseen < DATE_SUB(NOW(), INTERVAL 5 MINUTE) OR e.lastseen IS NULL THEN 1 ELSE 0 END) as offline_devices
+            FROM eva_info e
         ');
         $stmt->execute();
         $deviceStats = $stmt->fetch();
@@ -22,9 +22,9 @@ function getAdminDashboardData() {
         // Get active emergencies
         $stmt = $pdo->prepare('
             SELECT COUNT(*) as active_emergencies 
-            FROM Call_Histories 
-            WHERE Status IN ("Unanswered", "Active") 
-            AND DATE(Datetime) = CURDATE()
+            FROM call_histories 
+            WHERE status IN ("Unanswered", "Active") 
+            AND DATE(call_date) = CURDATE()
         ');
         $stmt->execute();
         $emergencyStats = $stmt->fetch();
@@ -58,10 +58,10 @@ function getUserDashboardData($userId) {
         $stmt = $pdo->prepare('
             SELECT 
                 COUNT(*) as total_devices,
-                SUM(CASE WHEN DeviceStatus = "Active" THEN 1 ELSE 0 END) as online_devices,
-                SUM(CASE WHEN DeviceStatus = "Inactive" THEN 1 ELSE 0 END) as offline_devices
-            FROM EVA 
-            WHERE UserIDFK = ?
+                SUM(CASE WHEN e.lastseen >= DATE_SUB(NOW(), INTERVAL 5 MINUTE) THEN 1 ELSE 0 END) as online_devices,
+                SUM(CASE WHEN e.lastseen < DATE_SUB(NOW(), INTERVAL 5 MINUTE) OR e.lastseen IS NULL THEN 1 ELSE 0 END) as offline_devices
+            FROM eva_info e 
+            WHERE e.user_id = ?
         ');
         $stmt->execute([$userId]);
         $deviceStats = $stmt->fetch();
@@ -69,11 +69,11 @@ function getUserDashboardData($userId) {
         // Get user's active emergencies
         $stmt = $pdo->prepare('
             SELECT COUNT(*) as active_emergencies 
-            FROM Call_Histories ch
-            INNER JOIN EVA e ON ch.SerialNoFK = e.SerialNoFK
-            WHERE e.UserIDFK = ? 
-            AND ch.Status IN ("Unanswered", "Active")
-            AND DATE(ch.Datetime) = CURDATE()
+            FROM call_histories ch
+            INNER JOIN eva_info e ON ch.eva_id = e.eva_id
+            WHERE e.user_id = ? 
+            AND ch.status IN ("Unanswered", "Active")
+            AND DATE(ch.call_date) = CURDATE()
         ');
         $stmt->execute([$userId]);
         $emergencyStats = $stmt->fetch();

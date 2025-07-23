@@ -15,7 +15,7 @@ try {
     $pdo = getDatabase();
     
     // Get all inventory items
-    $stmt = $pdo->prepare('SELECT * FROM Inventory ORDER BY AddedOn DESC');
+    $stmt = $pdo->prepare('SELECT serial_no as SerialNo, device_type as DeviceType, add_by as AddedBy, add_on as AddedOn, is_registered as isRegistered FROM inventory ORDER BY add_on DESC');
     $stmt->execute();
     $inventory = $stmt->fetchAll(PDO::FETCH_ASSOC);
     

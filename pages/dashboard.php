@@ -213,9 +213,9 @@ include '../includes/header.php';
                                         
                                         <!-- Status -->
                                         <td>
-                                            <span class="status-badge status-<?= $device['DeviceStatus'] ?>">
+                                            <span class="status-badge status-<?= strtolower($device['DeviceStatus'] ?? 'inactive') ?>">
                                                 <i class="bi bi-circle-fill me-1"></i>
-                                                <?= ucfirst($device['DeviceStatus']) ?>
+                                                <?= ucfirst($device['DeviceStatus'] ?? 'Inactive') ?>
                                             </span>
                                         </td>
                                         
@@ -231,8 +231,8 @@ include '../includes/header.php';
                                         <td>
                                             <div class="last-online">
                                                 <?php 
-                                                if ($device['LastOnline']) {
-                                                    $lastOnline = new DateTime($device['LastOnline']);
+                                                if ($device['lastseen'] ?? null) {
+                                                    $lastOnline = new DateTime($device['lastseen']);
                                                     echo $lastOnline->format('M j, Y H:i');
                                                 } else {
                                                     echo 'Never';
@@ -972,55 +972,7 @@ function filterDevicesByStatus(status) {
 
 // View device details
 function viewDevice(deviceId) {
-    // Use API to get device details
-    fetch(`${dashboardApiUrl}?action=device_details&serial_no=${encodeURIComponent(deviceId)}`)
-        .then(response => response.json())
-        .then(device => {
-            if (device.error) {
-                showToast(device.error, 'error');
-                return;
-            }
-            
-            document.getElementById('deviceDetails').innerHTML = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>Device Information</h6>
-                        <table class="table table-sm">
-                            <tr><td><strong>Device ID:</strong></td><td>${device.SerialNoFK}</td></tr>
-                            <tr><td><strong>Type:</strong></td><td>${device.DeviceType || 'EVA Device'}</td></tr>
-                            <tr><td><strong>Status:</strong></td><td><span class="status-badge status-${device.DeviceStatus}"><i class="bi bi-circle-fill me-1"></i>${device.DeviceStatus}</span></td></tr>
-                            <tr><td><strong>Location:</strong></td><td>${device.Address || 'Unknown'}</td></tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Assignment Details</h6>
-                        <table class="table table-sm">
-                            <tr><td><strong>User:</strong></td><td>${device.UserEmail || 'Unknown'}</td></tr>
-                            <tr><td><strong>Family Member:</strong></td><td>${device.Firstname} ${device.Lastname}</td></tr>
-                            <tr><td><strong>Emergency 1:</strong></td><td>${device.EmergencyNo1 || 'Not set'}</td></tr>
-                            <tr><td><strong>Emergency 2:</strong></td><td>${device.EmergencyNo2 || 'Not set'}</td></tr>
-                        </table>
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <h6>Additional Information</h6>
-                        <table class="table table-sm">
-                            <tr><td><strong>Registered Date:</strong></td><td>${device.RegisteredDate ? new Date(device.RegisteredDate).toLocaleDateString() : 'Unknown'}</td></tr>
-                            <tr><td><strong>Last Online:</strong></td><td>${device.LastOnline ? new Date(device.LastOnline).toLocaleString() : 'Never'}</td></tr>
-                            <tr><td><strong>Medical Condition:</strong></td><td>${device.MedicalCondition || 'None specified'}</td></tr>
-                        </table>
-                    </div>
-                </div>
-            `;
-            
-            currentEditingDevice = deviceId;
-            new bootstrap.Modal(document.getElementById('viewDeviceModal')).show();
-        })
-        .catch(error => {
-            console.error('Error fetching device details:', error);
-            showToast('Error loading device details', 'error');
-        });
+    window.location.href = '/device/view/' + encodeURIComponent(deviceId);
 }
 
 // Edit device from modal
@@ -1031,36 +983,15 @@ function editDeviceFromModal() {
 
 // Edit device
 function editDevice(deviceId) {
-    const device = devices.find(d => d.SerialNo === deviceId);
-    if (device) {
-        // Populate edit form
-        document.getElementById('editDeviceId').value = device.SerialNo;
-        document.getElementById('editDeviceSerial').value = device.SerialNo;
-        document.getElementById('editDeviceType').value = device.DeviceType || 'EVA-Standard';
-        document.getElementById('editEmergencyNo1').value = device.EmergencyNo1 || '';
-        document.getElementById('editEmergencyNo2').value = device.EmergencyNo2 || '';
-        document.getElementById('editLocation').value = device.Address || '';
-        
-        if (document.getElementById('editUserId')) {
-            document.getElementById('editUserId').value = device.UserIDFK || '';
-        }
-        document.getElementById('editDependentId').value = device.DependentIDFK || '';
-        
-        new bootstrap.Modal(document.getElementById('editDeviceModal')).show();
-    }
+    window.location.href = '//device/edit/' + encodeURIComponent(deviceId);
 }
 
 // Delete device
 function deleteDevice(deviceId) {
-    if (confirm(`Are you sure you want to delete device ${deviceId}?\n\nThis action cannot be undone.`)) {
-        // Use API to delete device
-        const formData = new FormData();
-        formData.append('action', 'delete_device');
-        formData.append('serial_no', deviceId);
-        
-        fetch(dashboardApiUrl, {
-            method: 'POST',
-            body: formData
+    if (confirm(`Are you sure you want to delete device ${deviceId}?\n\nThis action cannot be undone and will also delete all associated call history.`)) {
+        // Use the new device management API
+        fetch(`//actions/device/index.php?action=delete&serial_no=${encodeURIComponent(deviceId)}`, {
+            method: 'POST'
         })
         .then(response => response.json())
         .then(result => {
@@ -1207,19 +1138,32 @@ function saveUser() {
         return;
     }
     
-    // Simulate saving
-    const userData = {
-        email: formData.get('email'),
-        role: formData.get('role')
-    };
+    // Add action to form data
+    formData.append('action', 'add_user');
     
-    console.log('Saving user:', userData);
-    
-    // Close modal and show success message
-    bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
-    showToast('User created successfully!', 'success');
-    
-    // In a real application, you would make an API call
+    // Use API to save user
+    fetch(dashboardApiUrl, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+            showToast(result.message, 'success');
+            
+            // Refresh page after a delay
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showToast(result.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving user:', error);
+        showToast('Error creating user', 'error');
+    });
 }
 
 // Show toast notification
