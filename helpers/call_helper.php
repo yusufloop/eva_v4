@@ -21,7 +21,7 @@ function getAllCallHistories() {
                 d.sex as Gender,
                 d.dob as DOB,
                 d.med_condition as MedicalCondition,
-                u.email as UserEmail,
+                u.useremail as UserEmail,
                 e.family_contact1 as EmergencyNo1,
                 e.family_contact2 as EmergencyNo2,
                 e.reg_date as RegisteredDate,
@@ -34,6 +34,7 @@ function getAllCallHistories() {
             LEFT JOIN inventory i ON e.inventory_id = i.inventory_id
             ORDER BY ch.call_date DESC
         ');
+        error_log("SQL Statement: " . $stmt->queryString);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
@@ -61,7 +62,7 @@ function getUserCallHistories($userId) {
                 d.sex as Gender,
                 d.dob as DOB,
                 d.med_condition as MedicalCondition,
-                u.email as UserEmail,
+                u.useremail as UserEmail,
                 e.family_contact1 as EmergencyNo1,
                 e.family_contact2 as EmergencyNo2,
                 e.reg_date as RegisteredDate,
@@ -102,7 +103,7 @@ function getFilteredCallHistories($filters = []) {
                 d.sex as Gender,
                 d.dob as DOB,
                 d.med_condition as MedicalCondition,
-                u.email as UserEmail,
+                u.useremail as UserEmail,
                 e.family_contact1 as EmergencyNo1,
                 e.family_contact2 as EmergencyNo2,
                 e.reg_date as RegisteredDate,
@@ -229,7 +230,7 @@ function getCallHistoryById($recordId) {
                 d.sex as Gender,
                 d.dob as DOB,
                 d.med_condition as MedicalCondition,
-                u.email as UserEmail,
+                u.useremail as UserEmail,
                 e.family_contact1 as EmergencyNo1,
                 e.family_contact2 as EmergencyNo2,
                 e.reg_date as RegisteredDate,
